@@ -9,8 +9,26 @@ import com.example.appcorsosistemimobile.ui.screens.*
 @Composable
 fun BottomNavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "map") {
-        composable("map") { MapScreen() }
-        composable("add") { AddDiveScreen() }
-        composable("profile") { ProfileScreen() }
+
+        composable("map") {
+            MapScreen(
+                onDetailsClick = { site ->
+                    navController.navigate("detail/${site.id}")
+                }
+            )
+        }
+
+        composable("add") {
+            AddDiveScreen()
+        }
+
+        composable("profile") {
+            ProfileScreen()
+        }
+
+        composable("detail/{siteId}") { backStackEntry ->
+            val siteId = backStackEntry.arguments?.getString("siteId") ?: ""
+            DiveSiteDetailScreen(siteId = siteId)
+        }
     }
 }
