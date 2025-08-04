@@ -1,13 +1,119 @@
 package com.example.appcorsosistemimobile.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import com.example.appcorsosistemimobile.data.model.DiveSite
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
+import java.text.SimpleDateFormat
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiveSiteDetailScreen(siteId: String) {
-    // Per ora placeholder
-    Text(text = "Dettagli del sito con ID: $siteId", modifier = Modifier.padding(16.dp))
+fun DiveSiteDetailScreen(
+    site: DiveSite,
+    onBackClick: () -> Unit
+) {
+    val dateFormat = remember {
+        SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
+    }
+    val formattedDate = remember(site.createdAt) {
+        dateFormat.format(Date(site.createdAt))
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(site.name) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(16.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(text = site.description, style = MaterialTheme.typography.bodyLarge)
+
+            if (site.minDepth != null || site.maxDepth != null) {
+                Text(
+                    text = "Profondità: " +
+                            (site.minDepth?.toString() ?: "?") + "m - " +
+                            (site.maxDepth?.toString() ?: "?") + "m",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            if (site.authorId.isNotBlank()) {
+                Text(text = "Autore: ${site.authorId}", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            Text(text = "Creato il: $formattedDate", style = MaterialTheme.typography.bodyMedium)
+
+            if (site.imageUrls.isNotEmpty()) {
+                Text(text = "Immagini", style = MaterialTheme.typography.titleMedium)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(site.imageUrls) { url ->
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                ImageRequest.Builder(LocalContext.current)
+                                    .data(url)
+                                    .crossfade(true)
+                                    .build()
+                            ),
+                            contentDescription = "Immagine del sito",
+                            modifier = Modifier
+                                .height(120.dp)
+                                .width(200.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+            }
+
+            Text(text = "Posizione", style = MaterialTheme.typography.titleMedium)
+
+            val cameraPositionState = rememberCameraPositionState {
+                position = CameraPosition.fromLatLngZoom(
+                    LatLng(site.latitude, site.longitude), 15f
+                )
+            }
+
+            GoogleMap(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                cameraPositionState = cameraPositionState
+            ) {
+                Marker(
+                    state = rememberMarkerState(position = LatLng(site.latitude, site.longitude)),
+                    title = site.name
+                )
+            }
+        }
+    }
 }

@@ -15,11 +15,13 @@ import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.example.appcorsosistemimobile.ui.components.MapInfoOverlay
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.appcorsosistemimobile.R
+import androidx.navigation.NavController
+import com.google.gson.Gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
-fun MapScreen(
-    onDetailsClick: (DiveSite) -> Unit // callback per navigare al dettaglio
-) {
+fun MapScreen(navController: NavController) {
     val fakeDiveSites = listOf(
         DiveSite(
             id = "1",
@@ -27,17 +29,28 @@ fun MapScreen(
             description = "Fondale roccioso.",
             latitude = 44.1500,
             longitude = 12.2500,
+            minDepth = 12,
+            maxDepth = 85,
+            authorId = "idsub2",
             imageUrls = listOf("https://picsum.photos/200/100?random=1")
         ),
         DiveSite(
             id = "2",
             name = "Relitto Cesena",
-            description = "Vecchio relitto sommerso.",
+            description = "Vecchio relitto sommerso, peschereccio affondato nel 1993 a seguito di una collisione con gli scogli.",
             latitude = 44.1480,
             longitude = 12.2355,
-            imageUrls = listOf("https://picsum.photos/200/100?random=2")
+            minDepth = 15,
+            maxDepth = 45,
+            authorId = "idsub1",
+            imageUrls = listOf(
+                "https://picsum.photos/200/100?random=2",
+                "https://picsum.photos/200/100?random=3",
+                "https://picsum.photos/200/100?random=4"
+            )
         )
     )
+
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(44.1480, 12.2355), 14f)
@@ -58,23 +71,28 @@ fun MapScreen(
                     icon = BitmapDescriptorFactory.fromResource(R.drawable.divesite_icon),
                     onClick = {
                         selectedSite = site
-                        true // blocca infoWindow predefinita
+                        true
                     }
                 )
             }
         }
 
-        // Scheda mostrata in basso sopra la navbar
         selectedSite?.let {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 100.dp) // evita la navbar
+                    .padding(start = 16.dp, end = 16.dp, bottom = 100.dp)
             ) {
                 MapInfoOverlay(
                     site = it,
-                    onDetailsClick = onDetailsClick,
+                    onDetailsClick = { site ->
+                        val siteJson = URLEncoder.encode(
+                            Gson().toJson(site),
+                            StandardCharsets.UTF_8.toString()
+                        )
+                        navController.navigate("detail/$siteJson")
+                    },
                     onClose = { selectedSite = null }
                 )
             }
