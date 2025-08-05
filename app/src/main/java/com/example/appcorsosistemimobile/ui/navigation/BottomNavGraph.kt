@@ -38,8 +38,32 @@ fun BottomNavGraph(navController: NavHostController) {
 
             DiveSiteDetailScreen(
                 site = site,
+                navController = navController,
                 onBackClick = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = "comments/{diveSiteId}",
+            arguments = listOf(navArgument("diveSiteId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val diveSiteId = backStackEntry.arguments?.getString("diveSiteId") ?: ""
+            DiveSiteCommentsScreen(
+                diveSiteId = diveSiteId,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = "add_comment/{diveSiteId}",
+            arguments = listOf(navArgument("diveSiteId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val diveSiteId = backStackEntry.arguments?.getString("diveSiteId") ?: ""
+            AddCommentScreen(
+                diveSiteId = diveSiteId,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
     }
 }

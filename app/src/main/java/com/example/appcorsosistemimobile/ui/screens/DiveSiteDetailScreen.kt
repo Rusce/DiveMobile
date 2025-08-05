@@ -24,12 +24,23 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import android.net.Uri
+import androidx.navigation.NavController
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiveSiteDetailScreen(
     site: DiveSite,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    navController: NavController
 ) {
     val dateFormat = remember {
         SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
@@ -37,6 +48,10 @@ fun DiveSiteDetailScreen(
     val formattedDate = remember(site.createdAt) {
         dateFormat.format(Date(site.createdAt))
     }
+
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+    val coordinates = "${site.latitude} ${site.longitude}"
 
     Scaffold(
         topBar = {
@@ -48,12 +63,16 @@ fun DiveSiteDetailScreen(
                     }
                 }
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
+        val scrollState = rememberScrollState()
+
         Column(
             modifier = Modifier
-                .padding(paddingValues)
+                .padding(top = paddingValues.calculateTopPadding())
                 .padding(16.dp)
+                .verticalScroll(scrollState)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -74,6 +93,15 @@ fun DiveSiteDetailScreen(
 
             Text(text = "Creato il: $formattedDate", style = MaterialTheme.typography.bodyMedium)
 
+            Text(
+                text = "Coordinate: $coordinates (clicca per copiare)",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.clickable {
+                    clipboardManager.setText(AnnotatedString(coordinates))
+                    Toast.makeText(context, "Coordinate copiate negli appunti", Toast.LENGTH_SHORT).show()
+                }
+            )
+
             if (site.imageUrls.isNotEmpty()) {
                 Text(text = "Immagini", style = MaterialTheme.typography.titleMedium)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -92,6 +120,31 @@ fun DiveSiteDetailScreen(
                             contentScale = ContentScale.Crop
                         )
                     }
+                }
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val encodedId = Uri.encode(site.id) // se contiene caratteri speciali
+
+                Button(
+                    onClick = {
+                        navController.navigate("comments/$encodedId")
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Visualizza commenti")
+                }
+
+                Button(
+                    onClick = {
+                        navController.navigate("add_comment/$encodedId")
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Aggiungi commento")
                 }
             }
 
