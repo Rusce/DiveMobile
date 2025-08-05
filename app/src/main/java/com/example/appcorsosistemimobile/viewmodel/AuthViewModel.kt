@@ -19,12 +19,30 @@ class AuthViewModel : ViewModel() {
     var isLoggedIn by mutableStateOf(auth.currentUser != null)
         private set
 
+    var currentUser by mutableStateOf<User?>(null)
+        private set
+
+    fun loadUserProfile(email: String) {
+        Firebase.firestore
+            .collection("users")
+            .document(email)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    currentUser = document.toObject(User::class.java)
+                }
+            }
+    }
+
     fun login(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
                 currentUserEmail = auth.currentUser?.email
                 isLoggedIn = true
                 onSuccess()
+                currentUserEmail = auth.currentUser?.email
+                isLoggedIn = true
+                currentUserEmail?.let { loadUserProfile(it) }
             }
             .addOnFailureListener {
                 onError(it.message ?: "Errore durante il login")

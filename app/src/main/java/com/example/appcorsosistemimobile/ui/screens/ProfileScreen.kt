@@ -14,17 +14,47 @@ fun ProfileScreen(
     onNavigateToRegister: () -> Unit
 ) {
     val authViewModel: AuthViewModel = viewModel()
+    val user = authViewModel.currentUser
+
+    // Quando l’utente si logga, carica il profilo se non già caricato
+    LaunchedEffect(authViewModel.isLoggedIn) {
+        if (authViewModel.isLoggedIn && user == null) {
+            authViewModel.currentUserEmail?.let {
+                authViewModel.loadUserProfile(it)
+            }
+        }
+    }
 
     if (authViewModel.isLoggedIn) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.TopCenter
         ) {
             Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Loggato come: ${authViewModel.currentUserEmail}")
+                if (user != null) {
+                    Text("Ciao, ${user.name} ${user.surname}!", style = MaterialTheme.typography.headlineSmall)
+                    Text("Email: ${user.email}", style = MaterialTheme.typography.bodyMedium)
+                    Text("Immersioni preferite:", style = MaterialTheme.typography.titleMedium)
+
+                    if (user.favouriteDiveSite.isEmpty()) {
+                        Text("Nessuna immersione preferita.")
+                    } else {
+                        user.favouriteDiveSite.forEach { diveId ->
+                            Text("- $diveId")
+                        }
+                    }
+                } else {
+                    CircularProgressIndicator()
+                }
+
+                Spacer(Modifier.height(24.dp))
+
                 Button(onClick = { authViewModel.logout() }) {
                     Text("Logout")
                 }
@@ -37,4 +67,5 @@ fun ProfileScreen(
         )
     }
 }
+
 
