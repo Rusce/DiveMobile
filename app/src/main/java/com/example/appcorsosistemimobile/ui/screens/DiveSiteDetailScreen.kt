@@ -1,62 +1,68 @@
 package com.example.appcorsosistemimobile.ui.screens
 
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.example.appcorsosistemimobile.data.model.DiveSite
+import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import kotlinx.coroutines.launch
+import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.platform.LocalContext
-import android.widget.Toast
-import android.net.Uri
-import androidx.navigation.NavController
-
+import android.util.Log
+import androidx.compose.ui.res.painterResource
+import com.example.appcorsosistemimobile.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiveSiteDetailScreen(
-    site: DiveSite,
+    diveSiteId: String,
     onBackClick: () -> Unit,
     navController: NavController
 ) {
-    val dateFormat = remember {
-        SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
-    }
-    val formattedDate = remember(site.createdAt) {
-        dateFormat.format(Date(site.createdAt))
-    }
-
-    val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
-    val coordinates = "${site.latitude} ${site.longitude}"
+    val clipboardManager = LocalClipboardManager.current
+    val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+
+    var site by remember { mutableStateOf<DiveSite?>(null) }
+    var loading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(diveSiteId) {
+        site = DiveSiteRepository.getDiveSiteById(diveSiteId)
+        loading = false
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(site.name) },
+                title = { Text(site?.name ?: "Dettagli") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
@@ -66,7 +72,24 @@ fun DiveSiteDetailScreen(
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
-        val scrollState = rememberScrollState()
+
+        if (loading || site == null) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+            return@Scaffold
+        }
+
+        val formattedDate = remember(site!!.createdAt) {
+            SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault()).format(Date(site!!.createdAt))
+        }
+
+        val coordinates = "${site!!.latitude} ${site!!.longitude}"
 
         Column(
             modifier = Modifier
@@ -76,19 +99,17 @@ fun DiveSiteDetailScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(text = site.description, style = MaterialTheme.typography.bodyLarge)
+            Text(text = site!!.description, style = MaterialTheme.typography.bodyLarge)
 
-            if (site.minDepth != null || site.maxDepth != null) {
+            if (site!!.minDepth != null || site!!.maxDepth != null) {
                 Text(
-                    text = "Profondità: " +
-                            (site.minDepth?.toString() ?: "?") + "m - " +
-                            (site.maxDepth?.toString() ?: "?") + "m",
+                    text = "Profondità: ${site!!.minDepth ?: "?"}m - ${site!!.maxDepth ?: "?"}m",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
 
-            if (site.authorId.isNotBlank()) {
-                Text(text = "Autore: ${site.authorId}", style = MaterialTheme.typography.bodyMedium)
+            if (site!!.authorName.isNotBlank()) {
+                Text(text = "Autore: ${site!!.authorName}", style = MaterialTheme.typography.bodyMedium)
             }
 
             Text(text = "Creato il: $formattedDate", style = MaterialTheme.typography.bodyMedium)
@@ -102,22 +123,25 @@ fun DiveSiteDetailScreen(
                 }
             )
 
-            if (site.imageUrls.isNotEmpty()) {
+            if (site!!.imageUrls.isNotEmpty()) {
                 Text(text = "Immagini", style = MaterialTheme.typography.titleMedium)
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(site.imageUrls) { url ->
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                ImageRequest.Builder(LocalContext.current)
-                                    .data(url)
-                                    .crossfade(true)
-                                    .build()
-                            ),
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(site!!.imageUrls) { url ->
+                        Log.d("DIVE_IMAGES", "AsyncImage: $url")
+                        AsyncImage(
+                            model = url,
                             contentDescription = "Immagine del sito",
                             modifier = Modifier
                                 .height(120.dp)
                                 .width(200.dp),
-                            contentScale = ContentScale.Crop
+                            contentScale = ContentScale.Crop,
+                            placeholder = painterResource(id = R.drawable.placeholder),
+                            error = painterResource(id = R.drawable.image_error)
+
                         )
                     }
                 }
@@ -127,21 +151,17 @@ fun DiveSiteDetailScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val encodedId = Uri.encode(site.id) // se contiene caratteri speciali
+                val encodedId = Uri.encode(site!!.id)
 
                 Button(
-                    onClick = {
-                        navController.navigate("comments/$encodedId")
-                    },
+                    onClick = { navController.navigate("comments/$encodedId") },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Visualizza commenti")
                 }
 
                 Button(
-                    onClick = {
-                        navController.navigate("add_comment/$encodedId")
-                    },
+                    onClick = { navController.navigate("add_comment/$encodedId") },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Aggiungi commento")
@@ -152,7 +172,7 @@ fun DiveSiteDetailScreen(
 
             val cameraPositionState = rememberCameraPositionState {
                 position = CameraPosition.fromLatLngZoom(
-                    LatLng(site.latitude, site.longitude), 15f
+                    LatLng(site!!.latitude, site!!.longitude), 15f
                 )
             }
 
@@ -163,8 +183,8 @@ fun DiveSiteDetailScreen(
                 cameraPositionState = cameraPositionState
             ) {
                 Marker(
-                    state = rememberMarkerState(position = LatLng(site.latitude, site.longitude)),
-                    title = site.name
+                    state = rememberMarkerState(position = LatLng(site!!.latitude, site!!.longitude)),
+                    title = site!!.name
                 )
             }
         }

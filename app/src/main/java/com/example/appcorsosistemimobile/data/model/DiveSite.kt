@@ -8,7 +8,7 @@ data class DiveSite(
     val longitude: Double = 0.0,
     val minDepth: Int? = null,
     val maxDepth: Int? = null,
-    val authorId: String = "",
+    val authorName: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val imageUrls: List<String> = emptyList()
 )

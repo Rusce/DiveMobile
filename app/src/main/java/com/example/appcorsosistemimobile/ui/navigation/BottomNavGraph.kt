@@ -21,7 +21,7 @@ fun BottomNavGraph(navController: NavHostController) {
         }
 
         composable("add") {
-            AddDiveScreen()
+            AddDiveScreen(navController = navController)
         }
 
         composable("profile") {
@@ -29,17 +29,14 @@ fun BottomNavGraph(navController: NavHostController) {
         }
 
         composable(
-            route = "detail/{siteJson}",
-            arguments = listOf(navArgument("siteJson") { type = NavType.StringType })
+            route = "detail/{diveSiteId}",
+            arguments = listOf(navArgument("diveSiteId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val json = backStackEntry.arguments?.getString("siteJson")
-            val decodedJson = URLDecoder.decode(json, StandardCharsets.UTF_8.toString())
-            val site = Gson().fromJson(decodedJson, DiveSite::class.java)
-
+            val diveSiteId = backStackEntry.arguments?.getString("diveSiteId") ?: ""
             DiveSiteDetailScreen(
-                site = site,
-                navController = navController,
-                onBackClick = { navController.popBackStack() }
+                diveSiteId = diveSiteId,
+                onBackClick = { navController.popBackStack() },
+                navController = navController
             )
         }
 

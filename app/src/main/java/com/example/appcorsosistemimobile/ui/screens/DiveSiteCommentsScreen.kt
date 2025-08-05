@@ -25,73 +25,73 @@ fun DiveSiteCommentsScreen(
     val comments = remember {
         listOf(
             DiveSiteComment(
-                id = "1", diveId = diveSiteId, authorId = "utente1",
+                id = "1", diveId = diveSiteId, authorName = "utente1",
                 title = "Bellissima immersione!",
                 description = "Relitto spettacolare, ottima visibilità.",
                 stars = 5
             ),
             DiveSiteComment(
-                id = "2", diveId = diveSiteId, authorId = "utente2",
+                id = "2", diveId = diveSiteId, authorName = "utente2",
                 title = "Poca visibilità",
                 description = "Fondale interessante ma l'acqua era torbida.",
                 stars = 3
             ),
             DiveSiteComment(
-                id = "3", diveId = diveSiteId, authorId = "utente3",
+                id = "3", diveId = diveSiteId, authorName = "utente3",
                 title = "Esperienza fantastica",
                 description = "Tanti pesci, posto tranquillo e ben segnalato.",
                 stars = 4
             ),
             DiveSiteComment(
-                id = "1", diveId = diveSiteId, authorId = "utente1",
+                id = "1", diveId = diveSiteId, authorName = "utente1",
                 title = "Bellissima immersione!",
                 description = "Relitto spettacolare, ottima visibilità.",
                 stars = 5
             ),
             DiveSiteComment(
-                id = "2", diveId = diveSiteId, authorId = "utente2",
+                id = "2", diveId = diveSiteId, authorName = "utente2",
                 title = "Poca visibilità",
                 description = "Fondale interessante ma l'acqua era torbida.",
                 stars = 3
             ),
             DiveSiteComment(
-                id = "3", diveId = diveSiteId, authorId = "utente3",
+                id = "3", diveId = diveSiteId, authorName = "utente3",
                 title = "Esperienza fantastica",
                 description = "Tanti pesci, posto tranquillo e ben segnalato.",
                 stars = 4
             ),
             DiveSiteComment(
-                id = "1", diveId = diveSiteId, authorId = "utente1",
+                id = "1", diveId = diveSiteId, authorName = "utente1",
                 title = "Bellissima immersione!",
                 description = "Relitto spettacolare, ottima visibilità.",
                 stars = 5
             ),
             DiveSiteComment(
-                id = "2", diveId = diveSiteId, authorId = "utente2",
+                id = "2", diveId = diveSiteId, authorName = "utente2",
                 title = "Poca visibilità",
                 description = "Fondale interessante ma l'acqua era torbida.",
                 stars = 3
             ),
             DiveSiteComment(
-                id = "3", diveId = diveSiteId, authorId = "utente3",
+                id = "3", diveId = diveSiteId, authorName = "utente3",
                 title = "Esperienza fantastica",
                 description = "Tanti pesci, posto tranquillo e ben segnalato.",
                 stars = 4
             ),
             DiveSiteComment(
-                id = "1", diveId = diveSiteId, authorId = "utente1",
+                id = "1", diveId = diveSiteId, authorName = "utente1",
                 title = "Bellissima immersione!",
                 description = "Relitto spettacolare, ottima visibilità.",
                 stars = 5
             ),
             DiveSiteComment(
-                id = "2", diveId = diveSiteId, authorId = "utente2",
+                id = "2", diveId = diveSiteId, authorName = "utente2",
                 title = "Poca visibilità",
                 description = "Fondale interessante ma l'acqua era torbida.",
                 stars = 3
             ),
             DiveSiteComment(
-                id = "3", diveId = diveSiteId, authorId = "utente3",
+                id = "3", diveId = diveSiteId, authorName = "utente3",
                 title = "Esperienza fantastica",
                 description = "Tanti pesci, posto tranquillo e ben segnalato.",
                 stars = 4
@@ -141,7 +141,7 @@ fun CommentItem(comment: DiveSiteComment) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(comment.description, style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Autore: ${comment.authorId}", style = MaterialTheme.typography.bodySmall)
+            Text("Autore: ${comment.authorName}", style = MaterialTheme.typography.bodySmall)
             Text("Data: $formattedDate", style = MaterialTheme.typography.bodySmall)
         }
     }

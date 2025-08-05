@@ -16,40 +16,21 @@ import com.example.appcorsosistemimobile.ui.components.MapInfoOverlay
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.appcorsosistemimobile.R
 import androidx.navigation.NavController
+import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.google.gson.Gson
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 @Composable
 fun MapScreen(navController: NavController) {
-    val fakeDiveSites = listOf(
-        DiveSite(
-            id = "1",
-            name = "Scogliera Romagnola",
-            description = "Fondale roccioso.",
-            latitude = 44.1500,
-            longitude = 12.2500,
-            minDepth = 12,
-            maxDepth = 85,
-            authorId = "idsub2",
-            imageUrls = listOf("https://picsum.photos/200/100?random=1")
-        ),
-        DiveSite(
-            id = "2",
-            name = "Relitto Cesena",
-            description = "Vecchio relitto sommerso, peschereccio affondato nel 1993 a seguito di una collisione con gli scogli.",
-            latitude = 44.1480,
-            longitude = 12.2355,
-            minDepth = 15,
-            maxDepth = 45,
-            authorId = "idsub1",
-            imageUrls = listOf(
-                "https://picsum.photos/200/100?random=2",
-                "https://picsum.photos/200/100?random=3",
-                "https://picsum.photos/200/100?random=4"
-            )
-        )
-    )
+    val diveSites = remember { mutableStateListOf<DiveSite>() }
+
+    LaunchedEffect(Unit) {
+        val result = DiveSiteRepository.getAllDiveSites()
+        diveSites.clear()
+        diveSites.addAll(result)
+    }
+
 
 
     val cameraPositionState = rememberCameraPositionState {
@@ -63,7 +44,7 @@ fun MapScreen(navController: NavController) {
             modifier = Modifier.matchParentSize(),
             cameraPositionState = cameraPositionState
         ) {
-            fakeDiveSites.forEach { site ->
+            diveSites.forEach { site ->
                 Marker(
                     state = rememberMarkerState(
                         position = LatLng(site.latitude, site.longitude)
@@ -87,11 +68,7 @@ fun MapScreen(navController: NavController) {
                 MapInfoOverlay(
                     site = it,
                     onDetailsClick = { site ->
-                        val siteJson = URLEncoder.encode(
-                            Gson().toJson(site),
-                            StandardCharsets.UTF_8.toString()
-                        )
-                        navController.navigate("detail/$siteJson")
+                        navController.navigate("detail/${site.id}")
                     },
                     onClose = { selectedSite = null }
                 )

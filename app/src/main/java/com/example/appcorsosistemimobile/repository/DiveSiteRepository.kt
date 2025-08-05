@@ -1,0 +1,78 @@
+package com.example.appcorsosistemimobile.repository
+
+import com.example.appcorsosistemimobile.data.model.DiveSite
+import com.example.appcorsosistemimobile.data.model.DiveSiteComment
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.tasks.await
+import android.content.Context
+import android.net.Uri
+import com.google.firebase.storage.ktx.storage
+import kotlinx.coroutines.tasks.await
+
+object DiveSiteRepository {
+
+    private val db = Firebase.firestore
+    private val diveSiteCollection = db.collection("dive_sites")
+
+    suspend fun getAllDiveSites(): List<DiveSite> {
+        val snapshot = diveSiteCollection.get().await()
+        return snapshot.documents.mapNotNull {
+            it.toObject(DiveSite::class.java)
+        }
+    }
+
+    suspend fun getDiveSiteById(diveSiteId: String): DiveSite? {
+        val snapshot = diveSiteCollection.document(diveSiteId).get().await()
+        return snapshot.toObject(DiveSite::class.java)
+    }
+
+    suspend fun getCommentsForDiveSite(diveSiteId: String): List<DiveSiteComment> {
+        val snapshot = diveSiteCollection
+            .document(diveSiteId)
+            .collection("comments")
+            .get()
+            .await()
+
+        return snapshot.documents.mapNotNull {
+            it.toObject(DiveSiteComment::class.java)
+        }
+    }
+
+    suspend fun addDiveSiteWithImages(
+        context: Context,
+        diveSite: DiveSite,
+        imageUris: List<Uri>
+    ): Result<Unit> {
+        return try {
+            val storage = Firebase.storage
+            val urls = mutableListOf<String>()
+
+            for ((index, uri) in imageUris.withIndex()) {
+                val ref = storage.reference
+                    .child("divesites/${diveSite.id}/image_$index.jpg")
+
+                val stream = context.contentResolver.openInputStream(uri)
+                    ?: return Result.failure(Exception("Impossibile aprire immagine"))
+
+                ref.putStream(stream).await()
+                val downloadUrl = ref.downloadUrl.await().toString()
+                urls.add(downloadUrl)
+            }
+
+            val diveSiteWithUrls = diveSite.copy(imageUrls = urls)
+
+            Firebase.firestore
+                .collection("dive_sites")
+                .document(diveSite.id)
+                .set(diveSiteWithUrls)
+                .await()
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+}
+
