@@ -25,7 +25,7 @@ fun BottomNavGraph(navController: NavHostController) {
         }
 
         composable("profile") {
-            ProfileScreen()
+            ProfileScreen(onNavigateToRegister = { navController.navigate("register") })
         }
 
         composable(
@@ -64,6 +64,30 @@ fun BottomNavGraph(navController: NavHostController) {
                 onBackClick = { navController.popBackStack() }
             )
         }
+
+        composable("login") {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate("profile") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onNavigateToRegister = { navController.navigate("register") }
+            )
+        }
+
+        composable("register") {
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = { navController.navigate("login") }
+            )
+        }
+
+
 
     }
 }

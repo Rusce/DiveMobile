@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1073680127149",
+    "project_id": "divemobile-aa821",
+    "storage_bucket": "divemobile-aa821.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1073680127149:android:455d5b4b338a67fa81e224",
+        "android_client_info": {
+          "package_name": "com.example.appcorsosistemimobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9pH9lwi4aDO_L-ZnSyWGHT_sR3w_Lm0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
