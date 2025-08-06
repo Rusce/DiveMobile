@@ -9,6 +9,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 
+//TODO validazione input
+
 @Composable
 fun RegisterScreen(
     authViewModel: AuthViewModel = viewModel(),

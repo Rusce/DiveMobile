@@ -21,6 +21,11 @@ import com.google.gson.Gson
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+//TODO barra ricerca luoghi (api google maps)
+//TODO filtri (profondità)
+//TODO posizione utente
+//TODO visualizzazione lista (in base alla distanza e filtri extra)
+
 @Composable
 fun MapScreen(navController: NavController) {
     val diveSites = remember { mutableStateListOf<DiveSite>() }

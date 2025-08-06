@@ -17,6 +17,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+//TODO gestire caso in cui un commento abbia solo le stelle
+
 private const val TAG = "DiveSiteComments"
 
 @OptIn(ExperimentalMaterial3Api::class)

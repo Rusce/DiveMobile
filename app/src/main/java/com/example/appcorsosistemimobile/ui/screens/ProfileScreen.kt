@@ -10,6 +10,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 
+//TODO gamification (achievement per commenti, siti aggiunt ecc.)
+//TODO visualizzazione preferiti (riciclando overlay mappa)
+//TODO foto profilo (facoltativo mettere anche l'immagine nella navbar inferiore)
+
 @Composable
 fun ProfileScreen(
     onNavigateToRegister: () -> Unit,

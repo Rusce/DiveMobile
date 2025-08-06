@@ -23,6 +23,9 @@ import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 
+//TODO validazione input
+//TODO rotellina per caricamento nuovo divesite (pulsanti background disattivati e reset dei campi)
+
 @Composable
 fun AddDiveScreen(
     navController: NavController,

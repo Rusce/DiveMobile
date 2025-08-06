@@ -9,6 +9,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 
+//TODO limitare go back tra pagina register e login
+//TODO validazione input
+
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel = viewModel(),

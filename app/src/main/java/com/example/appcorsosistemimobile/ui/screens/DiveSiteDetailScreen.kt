@@ -39,6 +39,8 @@ import android.util.Log
 import androidx.compose.ui.res.painterResource
 import com.example.appcorsosistemimobile.R
 
+//TODO aggiungere cuore per mettere nei preferiti utente
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiveSiteDetailScreen(
