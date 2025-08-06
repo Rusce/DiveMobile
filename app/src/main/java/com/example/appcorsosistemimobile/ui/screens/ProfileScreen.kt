@@ -1,5 +1,6 @@
 package com.example.appcorsosistemimobile.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +24,10 @@ fun ProfileScreen(
         if (isLoggedIn && currentUser == null) {
             currentUserEmail?.let { authViewModel.loadUserProfile(it) }
         }
+    }
+
+    LaunchedEffect(currentUser) {
+        Log.d("USER_DEBUG", "Current user: ${currentUser?.name} ${currentUser?.surname}")
     }
 
     if (isLoggedIn) {

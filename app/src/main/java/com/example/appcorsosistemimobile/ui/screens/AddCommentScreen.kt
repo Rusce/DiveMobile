@@ -1,11 +1,13 @@
 package com.example.appcorsosistemimobile.ui.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -27,15 +29,33 @@ fun AddCommentScreen(
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
-    val authorName = currentUser?.name ?: "Sconosciuto"
-    val context = LocalContext.current
+    val currentUserEmail by authViewModel.currentUserEmail.collectAsState()
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(isLoggedIn, currentUser, currentUserEmail) {
+        if (isLoggedIn && currentUser == null && currentUserEmail != null) {
+            authViewModel.loadUserProfile(currentUserEmail!!)
+        }
+    }
 
     if (!isLoggedIn) {
         LaunchedEffect(Unit) {
             navController.navigate("profile")
         }
         return
+    }
+
+    if (currentUser == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val authorName = "${currentUser!!.name} ${currentUser!!.surname}"
+
+    LaunchedEffect(currentUser) {
+        Log.d("USER_DEBUG", "Current user: $authorName")
     }
 
     var title by remember { mutableStateOf("") }

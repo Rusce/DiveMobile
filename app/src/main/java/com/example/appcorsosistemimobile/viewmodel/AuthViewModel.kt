@@ -87,4 +87,14 @@ class AuthViewModel : ViewModel() {
                 onError(it.message ?: "Errore durante la registrazione")
             }
     }
+
+    fun initSession() {
+        val user = auth.currentUser
+        if (user != null) {
+            _currentUserEmail.value = user.email
+            _isLoggedIn.value = true
+            user.email?.let { loadUserProfile(it) }
+        }
+    }
+
 }

@@ -15,6 +15,10 @@ import com.example.appcorsosistemimobile.ui.theme.AppCorsoSistemiMobileTheme
 import androidx.navigation.compose.rememberNavController
 import com.example.appcorsosistemimobile.ui.components.BottomBar
 import com.example.appcorsosistemimobile.ui.navigation.BottomNavGraph
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
+import androidx.compose.runtime.LaunchedEffect
+
 
 
 class MainActivity : ComponentActivity() {
@@ -23,6 +27,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppCorsoSistemiMobileTheme {
+                val authViewModel: AuthViewModel = viewModel()
+
+                LaunchedEffect(Unit) {
+                    authViewModel.initSession()
+                }
+
                 val navController = rememberNavController()
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
