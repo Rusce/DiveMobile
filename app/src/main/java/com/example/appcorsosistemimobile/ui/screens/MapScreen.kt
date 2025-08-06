@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets
 fun MapScreen(navController: NavController) {
     val diveSites = remember { mutableStateListOf<DiveSite>() }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(key1 = navController.currentBackStackEntry) {
         val result = DiveSiteRepository.getAllDiveSites()
         diveSites.clear()
         diveSites.addAll(result)
