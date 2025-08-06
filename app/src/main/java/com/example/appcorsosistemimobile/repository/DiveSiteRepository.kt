@@ -9,6 +9,7 @@ import android.content.Context
 import android.net.Uri
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.tasks.await
+import android.util.Log
 
 object DiveSiteRepository {
 
@@ -25,18 +26,6 @@ object DiveSiteRepository {
     suspend fun getDiveSiteById(diveSiteId: String): DiveSite? {
         val snapshot = diveSiteCollection.document(diveSiteId).get().await()
         return snapshot.toObject(DiveSite::class.java)
-    }
-
-    suspend fun getCommentsForDiveSite(diveSiteId: String): List<DiveSiteComment> {
-        val snapshot = diveSiteCollection
-            .document(diveSiteId)
-            .collection("comments")
-            .get()
-            .await()
-
-        return snapshot.documents.mapNotNull {
-            it.toObject(DiveSiteComment::class.java)
-        }
     }
 
     suspend fun addDiveSiteWithImages(
@@ -73,6 +62,39 @@ object DiveSiteRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun addCommentToDiveSite(diveSiteId: String, comment: DiveSiteComment): Result<Unit> {
+        return try {
+            Firebase.firestore
+                .collection("dive_sites")
+                .document(diveSiteId)
+                .collection("comments")
+                .document(comment.id)
+                .set(comment)
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getCommentsForDiveSite(diveSiteId: String): List<DiveSiteComment> {
+        Log.d("DiveSiteComments", "Fetching comments for diveSiteId: $diveSiteId")//debug
+        return try {
+            val snapshot = Firebase.firestore
+                .collection("dive_sites")
+                .document(diveSiteId)
+                .collection("comments")
+                .get()
+                .await()
+
+            snapshot.documents.mapNotNull { it.toObject(DiveSiteComment::class.java) }
+        } catch (e: Exception) {
+            emptyList() // oppure log dell'errore volendo TODO
+        }
+    }
+
+
 
 }
 

@@ -1,19 +1,23 @@
 package com.example.appcorsosistemimobile.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.appcorsosistemimobile.data.model.DiveSiteComment
+import com.example.appcorsosistemimobile.repository.DiveSiteRepository
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+
+private const val TAG = "DiveSiteComments"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,82 +25,19 @@ fun DiveSiteCommentsScreen(
     diveSiteId: String,
     onBackClick: () -> Unit
 ) {
-    // Lista fittizia di commenti
-    val comments = remember {
-        listOf(
-            DiveSiteComment(
-                id = "1", diveId = diveSiteId, authorName = "utente1",
-                title = "Bellissima immersione!",
-                description = "Relitto spettacolare, ottima visibilità.",
-                stars = 5
-            ),
-            DiveSiteComment(
-                id = "2", diveId = diveSiteId, authorName = "utente2",
-                title = "Poca visibilità",
-                description = "Fondale interessante ma l'acqua era torbida.",
-                stars = 3
-            ),
-            DiveSiteComment(
-                id = "3", diveId = diveSiteId, authorName = "utente3",
-                title = "Esperienza fantastica",
-                description = "Tanti pesci, posto tranquillo e ben segnalato.",
-                stars = 4
-            ),
-            DiveSiteComment(
-                id = "1", diveId = diveSiteId, authorName = "utente1",
-                title = "Bellissima immersione!",
-                description = "Relitto spettacolare, ottima visibilità.",
-                stars = 5
-            ),
-            DiveSiteComment(
-                id = "2", diveId = diveSiteId, authorName = "utente2",
-                title = "Poca visibilità",
-                description = "Fondale interessante ma l'acqua era torbida.",
-                stars = 3
-            ),
-            DiveSiteComment(
-                id = "3", diveId = diveSiteId, authorName = "utente3",
-                title = "Esperienza fantastica",
-                description = "Tanti pesci, posto tranquillo e ben segnalato.",
-                stars = 4
-            ),
-            DiveSiteComment(
-                id = "1", diveId = diveSiteId, authorName = "utente1",
-                title = "Bellissima immersione!",
-                description = "Relitto spettacolare, ottima visibilità.",
-                stars = 5
-            ),
-            DiveSiteComment(
-                id = "2", diveId = diveSiteId, authorName = "utente2",
-                title = "Poca visibilità",
-                description = "Fondale interessante ma l'acqua era torbida.",
-                stars = 3
-            ),
-            DiveSiteComment(
-                id = "3", diveId = diveSiteId, authorName = "utente3",
-                title = "Esperienza fantastica",
-                description = "Tanti pesci, posto tranquillo e ben segnalato.",
-                stars = 4
-            ),
-            DiveSiteComment(
-                id = "1", diveId = diveSiteId, authorName = "utente1",
-                title = "Bellissima immersione!",
-                description = "Relitto spettacolare, ottima visibilità.",
-                stars = 5
-            ),
-            DiveSiteComment(
-                id = "2", diveId = diveSiteId, authorName = "utente2",
-                title = "Poca visibilità",
-                description = "Fondale interessante ma l'acqua era torbida.",
-                stars = 3
-            ),
-            DiveSiteComment(
-                id = "3", diveId = diveSiteId, authorName = "utente3",
-                title = "Esperienza fantastica",
-                description = "Tanti pesci, posto tranquillo e ben segnalato.",
-                stars = 4
-            )
-        )
+    var comments by remember { mutableStateOf<List<DiveSiteComment>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(diveSiteId) {
+        scope.launch {
+            isLoading = true
+            val result = DiveSiteRepository.getCommentsForDiveSite(diveSiteId)
+            Log.d(TAG, "Commenti ricevuti da Firestore: ${result.size}")
+            result.forEach { Log.d(TAG, "Commento: ${it.title}, autore: ${it.authorName}") }
+            comments = result
+            isLoading = false
+        }
     }
 
     Scaffold(
@@ -111,15 +52,36 @@ fun DiveSiteCommentsScreen(
             )
         }
     ) { padding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .fillMaxSize()
         ) {
-            items(comments) { comment ->
-                CommentItem(comment)
+            when {
+                isLoading -> {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                }
+
+                comments.isEmpty() -> {
+                    Text(
+                        text = "Nessun commento disponibile.",
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(comments) { comment ->
+                            CommentItem(comment)
+                        }
+                    }
+                }
             }
         }
     }

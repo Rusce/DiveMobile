@@ -8,19 +8,22 @@ import androidx.compose.runtime.setValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.example.appcorsosistemimobile.data.model.User
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class AuthViewModel : ViewModel() {
 
     private val auth = FirebaseAuth.getInstance()
 
-    var currentUserEmail by mutableStateOf<String?>(auth.currentUser?.email)
-        private set
+    private val _currentUserEmail = MutableStateFlow<String?>(auth.currentUser?.email)
+    val currentUserEmail: StateFlow<String?> = _currentUserEmail.asStateFlow()
 
-    var isLoggedIn by mutableStateOf(auth.currentUser != null)
-        private set
+    private val _isLoggedIn = MutableStateFlow(auth.currentUser != null)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
-    var currentUser by mutableStateOf<User?>(null)
-        private set
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     fun loadUserProfile(email: String) {
         Firebase.firestore
@@ -29,7 +32,7 @@ class AuthViewModel : ViewModel() {
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    currentUser = document.toObject(User::class.java)
+                    _currentUser.value = document.toObject(User::class.java)
                 }
             }
     }
@@ -37,12 +40,11 @@ class AuthViewModel : ViewModel() {
     fun login(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
-                currentUserEmail = auth.currentUser?.email
-                isLoggedIn = true
+                val userEmail = auth.currentUser?.email
+                _currentUserEmail.value = userEmail
+                _isLoggedIn.value = true
+                userEmail?.let { loadUserProfile(it) }
                 onSuccess()
-                currentUserEmail = auth.currentUser?.email
-                isLoggedIn = true
-                currentUserEmail?.let { loadUserProfile(it) }
             }
             .addOnFailureListener {
                 onError(it.message ?: "Errore durante il login")
@@ -51,8 +53,9 @@ class AuthViewModel : ViewModel() {
 
     fun logout() {
         auth.signOut()
-        currentUserEmail = null
-        isLoggedIn = false
+        _currentUserEmail.value = null
+        _isLoggedIn.value = false
+        _currentUser.value = null
     }
 
     fun register(

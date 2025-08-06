@@ -8,8 +8,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.appcorsosistemimobile.R
 import com.example.appcorsosistemimobile.data.model.DiveSite
 
 @Composable
@@ -33,7 +35,9 @@ fun MapInfoOverlay(
                 AsyncImage(
                     model = site.imageUrls.firstOrNull(),
                     contentDescription = site.name,
-                    modifier = Modifier.size(100.dp)
+                    modifier = Modifier.size(100.dp),
+                    placeholder = painterResource(id = com.example.appcorsosistemimobile.R.drawable.placeholder),
+                    error = painterResource(id = R.drawable.image_error)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {

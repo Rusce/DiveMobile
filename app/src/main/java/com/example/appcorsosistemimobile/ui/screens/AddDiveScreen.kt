@@ -28,8 +28,9 @@ fun AddDiveScreen(
     navController: NavController,
     authViewModel: AuthViewModel = viewModel()
 ) {
-    val isLoggedIn by authViewModel::isLoggedIn
-    val authorName = authViewModel.currentUser?.name ?: "Sconosciuto"
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val currentUser by authViewModel.currentUser.collectAsState()
+    val authorName = currentUser?.name ?: "Sconosciuto"
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 

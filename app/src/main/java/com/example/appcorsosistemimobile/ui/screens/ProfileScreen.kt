@@ -11,21 +11,21 @@ import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 
 @Composable
 fun ProfileScreen(
-    onNavigateToRegister: () -> Unit
+    onNavigateToRegister: () -> Unit,
+    authViewModel: AuthViewModel = viewModel()
 ) {
-    val authViewModel: AuthViewModel = viewModel()
-    val user = authViewModel.currentUser
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val currentUser by authViewModel.currentUser.collectAsState()
+    val currentUserEmail by authViewModel.currentUserEmail.collectAsState()
 
-    // Quando l’utente si logga, carica il profilo se non già caricato
-    LaunchedEffect(authViewModel.isLoggedIn) {
-        if (authViewModel.isLoggedIn && user == null) {
-            authViewModel.currentUserEmail?.let {
-                authViewModel.loadUserProfile(it)
-            }
+    // Carica profilo se loggato e currentUser non ancora presente
+    LaunchedEffect(isLoggedIn, currentUser) {
+        if (isLoggedIn && currentUser == null) {
+            currentUserEmail?.let { authViewModel.loadUserProfile(it) }
         }
     }
 
-    if (authViewModel.isLoggedIn) {
+    if (isLoggedIn) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter
@@ -37,15 +37,15 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (user != null) {
-                    Text("Ciao, ${user.name} ${user.surname}!", style = MaterialTheme.typography.headlineSmall)
-                    Text("Email: ${user.email}", style = MaterialTheme.typography.bodyMedium)
+                if (currentUser != null) {
+                    Text("Ciao, ${currentUser!!.name} ${currentUser!!.surname}!", style = MaterialTheme.typography.headlineSmall)
+                    Text("Email: ${currentUser!!.email}", style = MaterialTheme.typography.bodyMedium)
                     Text("Immersioni preferite:", style = MaterialTheme.typography.titleMedium)
 
-                    if (user.favouriteDiveSite.isEmpty()) {
+                    if (currentUser!!.favouriteDiveSite.isEmpty()) {
                         Text("Nessuna immersione preferita.")
                     } else {
-                        user.favouriteDiveSite.forEach { diveId ->
+                        currentUser!!.favouriteDiveSite.forEach { diveId ->
                             Text("- $diveId")
                         }
                     }
@@ -67,5 +67,3 @@ fun ProfileScreen(
         )
     }
 }
-
-

@@ -44,7 +44,8 @@ fun BottomNavGraph(navController: NavHostController) {
             route = "comments/{diveSiteId}",
             arguments = listOf(navArgument("diveSiteId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val diveSiteId = backStackEntry.arguments?.getString("diveSiteId") ?: ""
+            val encoded = backStackEntry.arguments?.getString("diveSiteId") ?: ""
+            val diveSiteId = URLDecoder.decode(encoded, StandardCharsets.UTF_8.name())
             DiveSiteCommentsScreen(
                 diveSiteId = diveSiteId,
                 onBackClick = { navController.popBackStack() }
@@ -55,12 +56,15 @@ fun BottomNavGraph(navController: NavHostController) {
             route = "add_comment/{diveSiteId}",
             arguments = listOf(navArgument("diveSiteId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val diveSiteId = backStackEntry.arguments?.getString("diveSiteId") ?: ""
+            val encoded = backStackEntry.arguments?.getString("diveSiteId") ?: ""
+            val diveSiteId = URLDecoder.decode(encoded, StandardCharsets.UTF_8.name())
             AddCommentScreen(
                 diveSiteId = diveSiteId,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                navController = navController
             )
         }
+
 
         composable("login") {
             LoginScreen(
