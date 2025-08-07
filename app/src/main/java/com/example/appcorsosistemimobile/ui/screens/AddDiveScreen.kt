@@ -2,6 +2,7 @@ package com.example.appcorsosistemimobile.ui.screens
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -44,9 +45,8 @@ fun AddDiveScreen(
     }
 
     if (!isLoggedIn) {
-        LaunchedEffect(Unit) {
-            navController.navigate("profile")
-        }
+        Toast.makeText(context, "Devi essere loggato per aggiungere un sito", Toast.LENGTH_SHORT).show()
+        navController.popBackStack()
         return
     }
 

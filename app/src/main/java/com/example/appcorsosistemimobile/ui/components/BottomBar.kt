@@ -8,6 +8,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.collectAsState
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
     object Map : BottomNavItem("map", Icons.Default.Place, "Mappa")
@@ -23,6 +28,9 @@ fun BottomBar(navController: NavController) {
         BottomNavItem.Profile
     )
 
+    val authViewModel: AuthViewModel = viewModel()
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val context = LocalContext.current
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -31,6 +39,11 @@ fun BottomBar(navController: NavController) {
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = {
+                    if (item is BottomNavItem.Add && !isLoggedIn) {
+                        Toast.makeText(context, "Devi essere loggato per aggiungere un sito di immersione", Toast.LENGTH_SHORT).show()
+                        return@NavigationBarItem
+                    }
+
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }

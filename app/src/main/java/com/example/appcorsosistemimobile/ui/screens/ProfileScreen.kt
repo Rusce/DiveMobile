@@ -23,15 +23,10 @@ fun ProfileScreen(
     val currentUser by authViewModel.currentUser.collectAsState()
     val currentUserEmail by authViewModel.currentUserEmail.collectAsState()
 
-    // Carica profilo se loggato e currentUser non ancora presente
-    LaunchedEffect(isLoggedIn, currentUser) {
-        if (isLoggedIn && currentUser == null) {
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
             currentUserEmail?.let { authViewModel.loadUserProfile(it) }
         }
-    }
-
-    LaunchedEffect(currentUser) {
-        Log.d("USER_DEBUG", "Current user: ${currentUser?.name} ${currentUser?.surname}")
     }
 
     if (isLoggedIn) {

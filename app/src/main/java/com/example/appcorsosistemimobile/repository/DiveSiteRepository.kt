@@ -94,7 +94,19 @@ object DiveSiteRepository {
         }
     }
 
-
-
+    suspend fun toggleFavoriteDiveSite(userEmail: String, diveSiteId: String, isFavorite: Boolean): Result<Unit> {
+        return try {
+            val userRef = Firebase.firestore.collection("users").document(userEmail)
+            val updateOp = if (isFavorite) {
+                mapOf("favouriteDiveSite" to com.google.firebase.firestore.FieldValue.arrayRemove(diveSiteId))
+            } else {
+                mapOf("favouriteDiveSite" to com.google.firebase.firestore.FieldValue.arrayUnion(diveSiteId))
+            }
+            userRef.update(updateOp).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 

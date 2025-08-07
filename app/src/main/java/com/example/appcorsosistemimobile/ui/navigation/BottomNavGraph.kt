@@ -25,7 +25,9 @@ fun BottomNavGraph(navController: NavHostController) {
         }
 
         composable("profile") {
-            ProfileScreen(onNavigateToRegister = { navController.navigate("register") })
+            ProfileScreen(
+                onNavigateToRegister = { navController.navigate("register") }
+            )
         }
 
         composable(

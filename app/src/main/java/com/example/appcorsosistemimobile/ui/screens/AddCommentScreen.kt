@@ -45,9 +45,8 @@ fun AddCommentScreen(
     }
 
     if (!isLoggedIn) {
-        LaunchedEffect(Unit) {
-            navController.navigate("profile")
-        }
+        Toast.makeText(LocalContext.current, "Devi essere loggato per aggiungere un commento", Toast.LENGTH_SHORT).show()
+        onBackClick()
         return
     }
 

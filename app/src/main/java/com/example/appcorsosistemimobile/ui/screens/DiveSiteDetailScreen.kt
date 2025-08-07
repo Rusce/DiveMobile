@@ -1,8 +1,8 @@
 package com.example.appcorsosistemimobile.ui.screens
 
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -11,6 +11,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,13 +20,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
+import com.example.appcorsosistemimobile.R
 import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
+import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -32,14 +37,8 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.launch
-import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.*
-import android.util.Log
-import androidx.compose.ui.res.painterResource
-import com.example.appcorsosistemimobile.R
-
-//TODO aggiungere cuore per mettere nei preferiti utente
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,12 +52,26 @@ fun DiveSiteDetailScreen(
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
+    val authViewModel: AuthViewModel = viewModel()
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val currentUser by authViewModel.currentUser.collectAsState()
+    val currentUserEmail by authViewModel.currentUserEmail.collectAsState()
+
     var site by remember { mutableStateOf<DiveSite?>(null) }
     var loading by remember { mutableStateOf(true) }
+    var toggleLoading by remember { mutableStateOf(false) }
+
+    val isFavorite = currentUser?.favouriteDiveSite?.contains(diveSiteId) == true
 
     LaunchedEffect(diveSiteId) {
         site = DiveSiteRepository.getDiveSiteById(diveSiteId)
         loading = false
+    }
+
+    LaunchedEffect(key1 = currentUserEmail) {
+        if (currentUserEmail != null && currentUser == null) {
+            authViewModel.loadUserProfile(currentUserEmail!!)
+        }
     }
 
     Scaffold(
@@ -68,6 +81,34 @@ fun DiveSiteDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            if (!isLoggedIn) {
+                                Toast.makeText(context, "Devi essere loggato per aggiungere ai preferiti", Toast.LENGTH_SHORT).show()
+                            } else if (!toggleLoading) {
+                                toggleLoading = true
+                                coroutineScope.launch {
+                                    val result = DiveSiteRepository.toggleFavoriteDiveSite(
+                                        userEmail = currentUserEmail ?: return@launch,
+                                        diveSiteId = diveSiteId,
+                                        isFavorite = isFavorite
+                                    )
+                                    if (result.isSuccess) {
+                                        authViewModel.loadUserProfile(currentUserEmail!!)
+                                    }
+                                    toggleLoading = false
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Rimuovi dai preferiti" else "Aggiungi ai preferiti",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             )
@@ -133,7 +174,6 @@ fun DiveSiteDetailScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(site!!.imageUrls) { url ->
-                        Log.d("DIVE_IMAGES", "AsyncImage: $url")
                         AsyncImage(
                             model = url,
                             contentDescription = "Immagine del sito",
@@ -143,7 +183,6 @@ fun DiveSiteDetailScreen(
                             contentScale = ContentScale.Crop,
                             placeholder = painterResource(id = R.drawable.placeholder),
                             error = painterResource(id = R.drawable.image_error)
-
                         )
                     }
                 }
@@ -163,7 +202,13 @@ fun DiveSiteDetailScreen(
                 }
 
                 Button(
-                    onClick = { navController.navigate("add_comment/$encodedId") },
+                    onClick = {
+                        if (!isLoggedIn) {
+                            Toast.makeText(context, "Devi essere loggato per aggiungere un commento", Toast.LENGTH_SHORT).show()
+                        } else {
+                            navController.navigate("add_comment/$encodedId")
+                        }
+                              },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Aggiungi commento")
