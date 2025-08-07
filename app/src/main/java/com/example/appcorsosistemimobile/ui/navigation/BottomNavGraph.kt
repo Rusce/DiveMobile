@@ -5,15 +5,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.appcorsosistemimobile.ui.screens.*
-import com.example.appcorsosistemimobile.data.model.DiveSite
-import com.google.gson.Gson
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
+import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 @Composable
-fun BottomNavGraph(navController: NavHostController) {
+fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewModel) {
     NavHost(navController = navController, startDestination = "map") {
 
         composable("map") {
@@ -21,12 +20,16 @@ fun BottomNavGraph(navController: NavHostController) {
         }
 
         composable("add") {
-            AddDiveScreen(navController = navController)
+            AddDiveScreen(
+                navController = navController,
+                authViewModel = authViewModel
+            )
         }
 
         composable("profile") {
             ProfileScreen(
-                onNavigateToRegister = { navController.navigate("register") }
+                onNavigateToRegister = { navController.navigate("register") },
+                authViewModel = authViewModel
             )
         }
 
@@ -38,7 +41,8 @@ fun BottomNavGraph(navController: NavHostController) {
             DiveSiteDetailScreen(
                 diveSiteId = diveSiteId,
                 onBackClick = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
+                authViewModel = authViewModel
             )
         }
 
@@ -63,10 +67,10 @@ fun BottomNavGraph(navController: NavHostController) {
             AddCommentScreen(
                 diveSiteId = diveSiteId,
                 onBackClick = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
+                authViewModel = authViewModel
             )
         }
-
 
         composable("login") {
             LoginScreen(
@@ -75,7 +79,8 @@ fun BottomNavGraph(navController: NavHostController) {
                         popUpTo("login") { inclusive = true }
                     }
                 },
-                onNavigateToRegister = { navController.navigate("register") }
+                onNavigateToRegister = { navController.navigate("register") },
+                authViewModel = authViewModel
             )
         }
 
@@ -86,11 +91,9 @@ fun BottomNavGraph(navController: NavHostController) {
                         popUpTo("register") { inclusive = true }
                     }
                 },
-                onNavigateToLogin = { navController.navigate("login") }
+                onNavigateToLogin = { navController.navigate("login") },
+                authViewModel = authViewModel
             )
         }
-
-
-
     }
 }

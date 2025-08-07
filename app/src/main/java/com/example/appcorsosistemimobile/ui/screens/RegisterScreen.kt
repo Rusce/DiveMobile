@@ -13,7 +13,7 @@ import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 
 @Composable
 fun RegisterScreen(
-    authViewModel: AuthViewModel = viewModel(),
+    authViewModel: AuthViewModel,
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {

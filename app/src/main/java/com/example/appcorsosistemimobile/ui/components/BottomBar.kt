@@ -21,14 +21,13 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 }
 
 @Composable
-fun BottomBar(navController: NavController) {
+fun BottomBar(navController: NavController, authViewModel: AuthViewModel) {
     val items = listOf(
         BottomNavItem.Map,
         BottomNavItem.Add,
         BottomNavItem.Profile
     )
 
-    val authViewModel: AuthViewModel = viewModel()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val context = LocalContext.current
     val navBackStackEntry by navController.currentBackStackEntryAsState()

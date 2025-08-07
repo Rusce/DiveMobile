@@ -45,14 +45,14 @@ import java.util.*
 fun DiveSiteDetailScreen(
     diveSiteId: String,
     onBackClick: () -> Unit,
-    navController: NavController
+    navController: NavController,
+    authViewModel: AuthViewModel
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
-    val authViewModel: AuthViewModel = viewModel()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
     val currentUserEmail by authViewModel.currentUserEmail.collectAsState()

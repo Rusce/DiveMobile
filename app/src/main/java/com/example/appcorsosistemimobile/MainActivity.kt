@@ -36,10 +36,10 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    bottomBar = { BottomBar(navController) }
+                    bottomBar = { BottomBar(navController, authViewModel) }
                 ) { innerPadding ->
                     androidx.compose.foundation.layout.Box(modifier = Modifier.padding(innerPadding)) {
-                        BottomNavGraph(navController = navController)
+                        BottomNavGraph(navController = navController, authViewModel = authViewModel)
                     }
                 }
             }

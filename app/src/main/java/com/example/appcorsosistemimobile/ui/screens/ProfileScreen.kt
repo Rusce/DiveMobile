@@ -17,7 +17,7 @@ import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 @Composable
 fun ProfileScreen(
     onNavigateToRegister: () -> Unit,
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -67,7 +67,8 @@ fun ProfileScreen(
     } else {
         LoginScreen(
             onLoginSuccess = { /* recomposition automatica */ },
-            onNavigateToRegister = onNavigateToRegister
+            onNavigateToRegister = onNavigateToRegister,
+            authViewModel = authViewModel
         )
     }
 }
