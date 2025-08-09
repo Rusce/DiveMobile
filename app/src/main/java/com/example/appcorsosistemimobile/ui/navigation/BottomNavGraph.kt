@@ -91,7 +91,7 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
                         popUpTo("register") { inclusive = true }
                     }
                 },
-                onNavigateToLogin = { navController.navigate("login") },
+                onNavigateToLogin = { navController.navigateUp() }, /*navigate("login")*/
                 authViewModel = authViewModel
             )
         }
