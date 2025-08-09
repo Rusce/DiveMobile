@@ -17,8 +17,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-//TODO gestire caso in cui un commento abbia solo le stelle
-
 private const val TAG = "DiveSiteComments"
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,7 +77,8 @@ fun DiveSiteCommentsScreen(
                             .fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(comments) { comment ->
+                        val sortedComments = comments.sortedByDescending { comment -> comment.createdAt };
+                        items(sortedComments) { comment ->
                             CommentItem(comment)
                         }
                     }
@@ -99,12 +98,16 @@ fun CommentItem(comment: DiveSiteComment) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(comment.title, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
+            if(comment.title.isNotBlank()) {
+                Text(comment.title, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+            }
             Text("⭐".repeat(comment.stars), style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(comment.description, style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
+            if(comment.description.isNotBlank()) {
+                Text(comment.description, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Text("Autore: ${comment.authorName}", style = MaterialTheme.typography.bodySmall)
             Text("Data: $formattedDate", style = MaterialTheme.typography.bodySmall)
         }
