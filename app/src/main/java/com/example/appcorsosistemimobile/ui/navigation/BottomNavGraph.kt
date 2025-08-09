@@ -87,7 +87,7 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
         composable("register") {
             RegisterScreen(
                 onRegisterSuccess = {
-                    navController.navigate("login") {
+                    navController.navigate("profile") {
                         popUpTo("register") { inclusive = true }
                     }
                 },

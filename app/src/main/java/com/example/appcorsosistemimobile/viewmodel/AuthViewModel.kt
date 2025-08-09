@@ -63,29 +63,38 @@ class AuthViewModel : ViewModel() {
         surname: String,
         email: String,
         password: String,
+        confirmPassword: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnSuccessListener {
+        if(password != confirmPassword) {
+            onError("Le password non coincidono")
+        } else {
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener {
 
-                val user = User(
-                    email = email,
-                    name = name,
-                    surname = surname,
-                    favouriteDiveSite = emptyList()
-                )
+                    val user = User(
+                        email = email,
+                        name = name,
+                        surname = surname,
+                        favouriteDiveSite = emptyList()
+                    )
 
-                Firebase.firestore
-                    .collection("users")
-                    .document(email)
-                    .set(user)
-                    .addOnSuccessListener { onSuccess() }
-                    .addOnFailureListener { onError("Registrazione avvenuta, ma salvataggio su Firestore fallito") }
-            }
-            .addOnFailureListener {
-                onError(it.message ?: "Errore durante la registrazione")
-            }
+                    Firebase.firestore
+                        .collection("users")
+                        .document(email)
+                        .set(user)
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener {
+                            onError("Registrazione avvenuta, ma salvataggio su Firestore fallito")
+                        }
+
+//                    login(email, password, onSuccess, onError)
+                }
+                .addOnFailureListener {
+                    onError(it.message ?: "Errore durante la registrazione")
+                }
+        }
     }
 
     fun initSession() {
