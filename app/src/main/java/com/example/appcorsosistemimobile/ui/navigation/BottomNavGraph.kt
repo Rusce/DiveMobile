@@ -95,5 +95,9 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
                 authViewModel = authViewModel
             )
         }
+
+        composable("select_coordinates") {
+            SelectCoordinates(navController)
+        }
     }
 }
