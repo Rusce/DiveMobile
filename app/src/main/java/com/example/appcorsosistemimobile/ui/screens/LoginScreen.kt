@@ -25,7 +25,9 @@ fun LoginScreen(
     onNavigateToRegister: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
+    var isEmailOk by remember { mutableStateOf(true) }
     var password by remember { mutableStateOf("") }
+    var isPasswordOk by remember { mutableStateOf(true) }
     var passwordVisibility by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -49,7 +51,15 @@ fun LoginScreen(
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {
+                if (!isEmailOk) {
+                    Text(
+                        text = "Questo campo è obbligatorio.",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
         )
 
         OutlinedTextField(
@@ -65,6 +75,14 @@ fun LoginScreen(
                     )
                 }
             },
+            supportingText = {
+                if (!isPasswordOk) {
+                    Text(
+                        text = "Questo campo è obbligatorio.",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             visualTransformation = if(passwordVisibility)
                     VisualTransformation.None
                 else
@@ -75,8 +93,12 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                authViewModel.login(email, password, onSuccess = onLoginSuccess) {
-                    errorMessage = it
+                isEmailOk = email.isNotBlank()
+                isPasswordOk = password.isNotBlank()
+                if(isEmailOk && isPasswordOk) {
+                    authViewModel.login(email, password, onSuccess = onLoginSuccess) {
+                        errorMessage = it
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
