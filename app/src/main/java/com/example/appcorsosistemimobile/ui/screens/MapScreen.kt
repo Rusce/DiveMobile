@@ -22,6 +22,8 @@ import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 //TODO filtri (profondità)
 //TODO posizione utente
 //TODO visualizzazione lista (in base alla distanza e filtri extra)
+//TODO diminuire lo zoom iniziale
+//TODO quando premo mappa dalla schermata dei dettagli dovrebbe uscire dai dettagli
 
 @Composable
 fun MapScreen(navController: NavController) {

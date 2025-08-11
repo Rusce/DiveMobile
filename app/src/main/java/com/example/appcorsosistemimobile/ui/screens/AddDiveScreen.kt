@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-//TODO reset dei campi una volta caricato un sito
+//TODO reset dei campi una volta caricato un sito ?? ora fa navigateUp
 
 @Composable
 fun AddDiveScreen(

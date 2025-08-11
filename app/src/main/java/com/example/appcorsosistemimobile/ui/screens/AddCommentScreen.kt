@@ -4,15 +4,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.example.appcorsosistemimobile.data.model.DiveSiteComment
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
@@ -22,13 +20,13 @@ import java.util.UUID
 //TODO rimuovere il mantenimento di stato su questa schermata, se si cambia
 // (es. si va a profilo mentre si è in schermata add comment)
 // bisogna fare in modo di ritornare sulla pagina di dettaglio per evitare bug
+//TODO uan volta aggiunto un commento fare navigateUp ??
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCommentScreen(
     diveSiteId: String,
     onBackClick: () -> Unit,
-    navController: NavController,
     authViewModel: AuthViewModel
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
@@ -72,7 +70,7 @@ fun AddCommentScreen(
                 title = { Text("Aggiungi commento") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
                     }
                 }
             )
