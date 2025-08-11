@@ -23,8 +23,6 @@ import java.util.UUID
 // (es. si va a profilo mentre si è in schermata add comment)
 // bisogna fare in modo di ritornare sulla pagina di dettaglio per evitare bug
 
-//TODO validazione degli input
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCommentScreen(

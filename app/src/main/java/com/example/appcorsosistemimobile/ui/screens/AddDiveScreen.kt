@@ -38,7 +38,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.descriptors.PrimitiveKind
 import java.util.*
 
-//TODO validazione input
 //TODO rotellina per caricamento nuovo divesite (pulsanti background disattivati e reset dei campi)
 
 @Composable
@@ -231,6 +230,13 @@ fun AddDiveScreen(
             Text("Seleziona immagini")
         }
 
+        if(!isImageOk) {
+            Text(
+                text = "Inserire un'immagine.",
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
         imageUris.forEach { uri ->
             Image(
                 painter = rememberAsyncImagePainter(uri),
@@ -248,7 +254,7 @@ fun AddDiveScreen(
             isLongitudeOk = longitude.toString().isNotBlank() && longitude.toString().toDoubleOrNull() != null
             isMinDepthOk = minDepth.isNotBlank()
             isMaxDepthOk = maxDepth.isNotBlank()
-//            isImageOk = imageUris.isNotEmpty()
+            isImageOk = imageUris.isNotEmpty()
 
             if(isNameOk && isDescriptionOk && isLatitudeOk && isLongitudeOk && isMinDepthOk && isMaxDepthOk && isImageOk) {
                 val diveSite = DiveSite(
