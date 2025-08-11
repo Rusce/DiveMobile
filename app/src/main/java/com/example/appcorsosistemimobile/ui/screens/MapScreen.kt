@@ -1,10 +1,14 @@
 package com.example.appcorsosistemimobile.ui.screens
 
+import android.Manifest
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -15,16 +19,19 @@ import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.example.appcorsosistemimobile.ui.components.MapInfoOverlay
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.appcorsosistemimobile.R
+import com.example.appcorsosistemimobile.utils.*
 import androidx.navigation.NavController
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
+import com.google.maps.android.compose.CameraPositionState
+import kotlinx.coroutines.launch
+
 
 //TODO barra ricerca luoghi (api google maps)
 //TODO filtri (profondità)
-//TODO posizione utente
 //TODO visualizzazione lista (in base alla distanza e filtri extra)
-//TODO diminuire lo zoom iniziale
 //TODO quando premo mappa dalla schermata dei dettagli dovrebbe uscire dai dettagli
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun MapScreen(navController: NavController) {
     val diveSites = remember { mutableStateListOf<DiveSite>() }
@@ -35,10 +42,39 @@ fun MapScreen(navController: NavController) {
         diveSites.addAll(result)
     }
 
+    val ctx = LocalContext.current
+    val locationService = remember { LocationService(ctx) }
+    val coordinates by locationService.coordinates.collectAsStateWithLifecycle()
 
+    val scope = rememberCoroutineScope()
+
+    val locationPermissions = rememberMultiplePermissions(
+        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+    ) { }
+
+    suspend fun getLocationOrRequestPermission() {
+        if (locationPermissions.statuses.any { it.value.isGranted }) {
+            try {
+                locationService.getCurrentLocation()
+            } catch (_: IllegalStateException) { }
+        } else {
+            locationPermissions.launchPermissionRequest()
+        }
+    }
+
+    fun updateCameraPositionState(cameraPositionState: CameraPositionState) {
+        if(coordinates != null) {
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(coordinates!!.latitude, coordinates!!.longitude), 14f)
+        }
+    }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(44.1480, 12.2355), 14f)
+    }
+
+    scope.launch {
+        getLocationOrRequestPermission()
+        updateCameraPositionState(cameraPositionState)
     }
 
     var selectedSite by remember { mutableStateOf<DiveSite?>(null) }
@@ -58,6 +94,13 @@ fun MapScreen(navController: NavController) {
                         selectedSite = site
                         true
                     }
+                )
+            }
+
+            if(coordinates != null) {
+                Marker(
+                    state = rememberMarkerState(position = LatLng(coordinates!!.latitude, coordinates!!.longitude)),
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
                 )
             }
         }
