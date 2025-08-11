@@ -7,16 +7,17 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import com.example.appcorsosistemimobile.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -28,17 +29,15 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.currentCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.descriptors.PrimitiveKind
 import java.util.*
 
-//TODO rotellina per caricamento nuovo divesite (pulsanti background disattivati e reset dei campi)
+//TODO reset dei campi una volta caricato un sito
 
 @Composable
 fun AddDiveScreen(
@@ -77,6 +76,8 @@ fun AddDiveScreen(
     }
 
     val stateHandle = navController.currentBackStackEntry?.savedStateHandle
+
+    var isSaving by remember { mutableStateOf(false) }
 
     var name by remember { mutableStateOf(stateHandle?.get("name") ?: "") }
     var isNameOk by remember { mutableStateOf(true) }
@@ -170,7 +171,7 @@ fun AddDiveScreen(
             value = maxDepth,
             onValueChange = {
                 maxDepth = it
-                stateHandle?.set("min_depth", maxDepth)
+                stateHandle?.set("max_depth", maxDepth)
             },
             label = { Text("Profondità Max") },
             modifier = Modifier.fillMaxWidth(),
@@ -185,7 +186,7 @@ fun AddDiveScreen(
         )
 
         OutlinedTextField(
-            value = latitude.toString(),
+            value = latitude,
             onValueChange = {
                 latitude = it
                 stateHandle?.set("latitude", latitude)
@@ -203,7 +204,7 @@ fun AddDiveScreen(
         )
 
         OutlinedTextField(
-            value = longitude.toString(),
+            value = longitude,
             onValueChange = {
                 longitude = it
                 stateHandle?.set("longitude", longitude)
@@ -250,19 +251,21 @@ fun AddDiveScreen(
         Button(onClick = {
             isNameOk = name.isNotBlank()
             isDescriptionOk = description.isNotBlank()
-            isLatitudeOk = latitude.toString().isNotBlank() && latitude.toString().toDoubleOrNull() != null
-            isLongitudeOk = longitude.toString().isNotBlank() && longitude.toString().toDoubleOrNull() != null
+            isLatitudeOk = latitude.isNotBlank() && latitude.toDoubleOrNull() != null
+            isLongitudeOk = longitude.isNotBlank() && longitude.toDoubleOrNull() != null
             isMinDepthOk = minDepth.isNotBlank()
             isMaxDepthOk = maxDepth.isNotBlank()
             isImageOk = imageUris.isNotEmpty()
 
             if(isNameOk && isDescriptionOk && isLatitudeOk && isLongitudeOk && isMinDepthOk && isMaxDepthOk && isImageOk) {
+                isSaving = true
+
                 val diveSite = DiveSite(
                     id = UUID.randomUUID().toString(),
                     name = name,
                     description = description,
-                    latitude = latitude.toString().toDouble(),
-                    longitude = longitude.toString().toDouble(),
+                    latitude = latitude.toDouble(),
+                    longitude = longitude.toDouble(),
                     minDepth = minDepth.toIntOrNull(),
                     maxDepth = maxDepth.toIntOrNull(),
                     authorName = authorName,
@@ -281,6 +284,11 @@ fun AddDiveScreen(
                     } else {
                         "Errore: ${result.exceptionOrNull()?.message}"
                     }
+                    if(result.isSuccess) {
+                        isSaving = false
+                        delay(500)
+                        navController.navigateUp()
+                    }
                 }
             }
         }) {
@@ -289,6 +297,18 @@ fun AddDiveScreen(
 
         successMessage?.let {
             Text(it, color = MaterialTheme.colorScheme.primary)
+        }
+    }
+
+    if (isSaving) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(enabled = false, onClick = {})
+                .background(Color.White.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
         }
     }
 }
@@ -305,7 +325,7 @@ fun SelectCoordinates(navController: NavController) {
     } else {
         null
     }
-    var markerPosition by remember { mutableStateOf<LatLng?>(initialPosition) }
+    var markerPosition by remember { mutableStateOf(initialPosition) }
 
     val diveSites = remember { mutableStateListOf<DiveSite>() }
     val coroutineScope = rememberCoroutineScope()
@@ -365,14 +385,5 @@ fun SelectCoordinates(navController: NavController) {
                 }
             }
         }
-    }
-}
-
-private fun onCoordinatesSelected(latLng: LatLng) {
-    Log.d(null, latLng.toString())
-    try {
-        Thread.sleep(500)
-    } catch (e: InterruptedException) {
-        Thread.currentThread().interrupt()
     }
 }
