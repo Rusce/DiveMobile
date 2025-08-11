@@ -36,7 +36,7 @@ fun MapInfoOverlay(
                     model = site.imageUrls.firstOrNull(),
                     contentDescription = site.name,
                     modifier = Modifier.size(100.dp),
-                    placeholder = painterResource(id = com.example.appcorsosistemimobile.R.drawable.placeholder),
+                    placeholder = painterResource(id = R.drawable.placeholder),
                     error = painterResource(id = R.drawable.image_error)
                 )
                 Spacer(modifier = Modifier.width(12.dp))

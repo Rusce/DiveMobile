@@ -17,9 +17,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.appcorsosistemimobile.R
 import androidx.navigation.NavController
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
-import com.google.gson.Gson
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 //TODO barra ricerca luoghi (api google maps)
 //TODO filtri (profondità)

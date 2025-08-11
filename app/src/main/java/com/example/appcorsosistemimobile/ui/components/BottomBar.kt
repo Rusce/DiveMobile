@@ -8,16 +8,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.collectAsState
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
-    object Map : BottomNavItem("map", Icons.Default.Place, "Mappa")
-    object Add : BottomNavItem("add", Icons.Default.AddCircle, "")
-    object Profile : BottomNavItem("profile", Icons.Default.Person, "Profilo")
+    data object Map : BottomNavItem("map", Icons.Default.Place, "Mappa")
+    data object Add : BottomNavItem("add", Icons.Default.AddCircle, "")
+    data object Profile : BottomNavItem("profile", Icons.Default.Person, "Profilo")
 }
 
 @Composable
@@ -52,7 +51,7 @@ fun BottomBar(navController: NavController, authViewModel: AuthViewModel) {
                     }
                 },
                 icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
-                label = { if (item.label.isNotBlank()) Text(item.label) else null }
+                label = { if (item.label.isNotBlank()) Text(item.label) }
             )
         }
     }

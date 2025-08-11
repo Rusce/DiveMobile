@@ -1,13 +1,11 @@
 package com.example.appcorsosistemimobile.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 
 //TODO gamification (achievement per commenti, siti aggiunt ecc.)
