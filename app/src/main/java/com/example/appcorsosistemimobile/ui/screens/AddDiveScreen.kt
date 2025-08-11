@@ -1,5 +1,6 @@
 package com.example.appcorsosistemimobile.ui.screens
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
@@ -20,16 +21,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
+import com.example.appcorsosistemimobile.utils.LocationService
+import com.example.appcorsosistemimobile.utils.rememberMultiplePermissions
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.currentCameraPositionState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -313,7 +319,7 @@ fun AddDiveScreen(
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectCoordinates(navController: NavController) {
@@ -336,6 +342,41 @@ fun SelectCoordinates(navController: NavController) {
         diveSites.addAll(result)
     }
 
+    val ctx = LocalContext.current
+    val locationService = remember { LocationService(ctx) }
+    val coordinates by locationService.coordinates.collectAsStateWithLifecycle()
+
+    val scope = rememberCoroutineScope()
+
+    val locationPermissions = rememberMultiplePermissions(
+        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+    ) { }
+
+    suspend fun getLocationOrRequestPermission() {
+        if (locationPermissions.statuses.any { it.value.isGranted }) {
+            try {
+                locationService.getCurrentLocation()
+            } catch (_: IllegalStateException) { }
+        } else {
+            locationPermissions.launchPermissionRequest()
+        }
+    }
+
+    fun updateCameraPositionState(cameraPositionState: CameraPositionState) {
+        if(coordinates != null) {
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(coordinates!!.latitude, coordinates!!.longitude), 14f)
+        }
+    }
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(44.1480, 12.2355), 14f)
+    }
+
+    scope.launch {
+        getLocationOrRequestPermission()
+        updateCameraPositionState(cameraPositionState)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -353,7 +394,7 @@ fun SelectCoordinates(navController: NavController) {
     ) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
-            cameraPositionState = currentCameraPositionState,
+            cameraPositionState = cameraPositionState,
             onMapClick = { latLng ->
                 coroutineScope.launch {
                     markerPosition = latLng
