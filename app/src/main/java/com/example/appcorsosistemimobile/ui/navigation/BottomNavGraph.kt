@@ -67,7 +67,6 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
             AddCommentScreen(
                 diveSiteId = diveSiteId,
                 onBackClick = { navController.popBackStack() },
-                navController = navController,
                 authViewModel = authViewModel
             )
         }
