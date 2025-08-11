@@ -25,12 +25,17 @@ fun RegisterScreen(
     onNavigateToLogin: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
+    var isEmailOk by remember { mutableStateOf(true) }
     var password by remember { mutableStateOf("") }
+    var isPasswordOk by remember { mutableStateOf(true) }
     var passwordVisibility by remember { mutableStateOf(false) }
     var confirmPassword by remember { mutableStateOf("") }
+    var isConfirmPasswordOk by remember { mutableStateOf(true) }
     var confirmPasswordVisibility by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf("") }
+    var isNameOk by remember { mutableStateOf(true) }
     var surname by remember { mutableStateOf("") }
+    var isSurnameOk by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val passwordIcon = if(passwordVisibility)
@@ -58,21 +63,45 @@ fun RegisterScreen(
             value = name,
             onValueChange = { name = it },
             label = { Text("Nome") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {
+                if (!isNameOk) {
+                    Text(
+                        text = "Questo campo è obbligatorio.",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
         )
 
         OutlinedTextField(
             value = surname,
             onValueChange = { surname = it },
             label = { Text("Cognome") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {
+                if (!isSurnameOk) {
+                    Text(
+                        text = "Questo campo è obbligatorio.",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
         )
 
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            supportingText = {
+                if (!isEmailOk) {
+                    Text(
+                        text = "Questo campo è obbligatorio.",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
         )
 
         OutlinedTextField(
@@ -85,6 +114,14 @@ fun RegisterScreen(
                     Icon(
                         imageVector = passwordIcon,
                         contentDescription = "Visibility Icon"
+                    )
+                }
+            },
+            supportingText = {
+                if (!isPasswordOk) {
+                    Text(
+                        text = "Questo campo è obbligatorio.",
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
             },
@@ -107,6 +144,14 @@ fun RegisterScreen(
                     )
                 }
             },
+            supportingText = {
+                if (!isConfirmPasswordOk) {
+                    Text(
+                        text = "Questo campo è obbligatorio.",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             visualTransformation = if(confirmPasswordVisibility)
                 VisualTransformation.None
             else
@@ -117,15 +162,23 @@ fun RegisterScreen(
 
         Button(
             onClick = {
-                authViewModel.register(
-                    name = name,
-                    surname = surname,
-                    email = email,
-                    password = password,
-                    confirmPassword = confirmPassword,
-                    onSuccess = onRegisterSuccess,
-                    onError = { errorMessage = it }
-                )
+                isNameOk = name.isNotBlank()
+                isSurnameOk = surname.isNotBlank()
+                isEmailOk = email.isNotBlank()
+                isPasswordOk = password.isNotBlank()
+                isConfirmPasswordOk = confirmPassword.isNotBlank()
+
+                if(isNameOk && isSurnameOk && isEmailOk && isPasswordOk && isConfirmPasswordOk) {
+                    authViewModel.register(
+                        name = name,
+                        surname = surname,
+                        email = email,
+                        password = password,
+                        confirmPassword = confirmPassword,
+                        onSuccess = onRegisterSuccess,
+                        onError = { errorMessage = it }
+                    )
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
