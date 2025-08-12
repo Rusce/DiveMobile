@@ -22,7 +22,7 @@ import com.example.appcorsosistemimobile.R
 import com.example.appcorsosistemimobile.utils.*
 import androidx.navigation.NavController
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
-import com.google.maps.android.compose.CameraPositionState
+import com.google.maps.android.compose.MapProperties
 import kotlinx.coroutines.launch
 
 
@@ -35,6 +35,19 @@ import kotlinx.coroutines.launch
 @Composable
 fun MapScreen(navController: NavController) {
     val diveSites = remember { mutableStateListOf<DiveSite>() }
+    val ctx = LocalContext.current
+    val locationService = remember { LocationService(ctx) }
+    val coordinates by locationService.coordinates.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val locationPermissions = rememberMultiplePermissions(
+        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+    ) { }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(defaultInitialLocation, 10f)
+    }
+
+    var selectedSite by remember { mutableStateOf<DiveSite?>(null) }
+    var isInitialLocationSet by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = navController.currentBackStackEntry) {
         val result = DiveSiteRepository.getAllDiveSites()
@@ -42,47 +55,13 @@ fun MapScreen(navController: NavController) {
         diveSites.addAll(result)
     }
 
-    val ctx = LocalContext.current
-    val locationService = remember { LocationService(ctx) }
-    val coordinates by locationService.coordinates.collectAsStateWithLifecycle()
-
-    val scope = rememberCoroutineScope()
-
-    val locationPermissions = rememberMultiplePermissions(
-        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-    ) { }
-
-    suspend fun getLocationOrRequestPermission() {
-        if (locationPermissions.statuses.any { it.value.isGranted }) {
-            try {
-                locationService.getCurrentLocation()
-            } catch (_: IllegalStateException) { }
-        } else {
-            locationPermissions.launchPermissionRequest()
-        }
-    }
-
-    fun updateCameraPositionState(cameraPositionState: CameraPositionState) {
-        if(coordinates != null) {
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(coordinates!!.latitude, coordinates!!.longitude), 14f)
-        }
-    }
-
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(44.1480, 12.2355), 14f)
-    }
-
-    scope.launch {
-        getLocationOrRequestPermission()
-        updateCameraPositionState(cameraPositionState)
-    }
-
-    var selectedSite by remember { mutableStateOf<DiveSite?>(null) }
+    scope.launch { getLocationOrRequestPermission(locationPermissions, locationService) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.matchParentSize(),
-            cameraPositionState = cameraPositionState
+            cameraPositionState = cameraPositionState,
+            properties = MapProperties( isMyLocationEnabled = locationPermissions.statuses.any { it.value.isGranted } )
         ) {
             diveSites.forEach { site ->
                 Marker(
@@ -97,11 +76,11 @@ fun MapScreen(navController: NavController) {
                 )
             }
 
-            if(coordinates != null) {
-                Marker(
-                    state = rememberMarkerState(position = LatLng(coordinates!!.latitude, coordinates!!.longitude)),
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
-                )
+            LaunchedEffect(coordinates) {
+                if (coordinates != null && !isInitialLocationSet) {
+                    updateCameraPositionState(cameraPositionState, coordinates)
+                    isInitialLocationSet = true
+                }
             }
         }
 

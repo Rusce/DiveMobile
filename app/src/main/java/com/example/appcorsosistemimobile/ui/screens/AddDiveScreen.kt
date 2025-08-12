@@ -27,13 +27,15 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.example.appcorsosistemimobile.utils.LocationService
+import com.example.appcorsosistemimobile.utils.getLocationOrRequestPermission
 import com.example.appcorsosistemimobile.utils.rememberMultiplePermissions
+import com.example.appcorsosistemimobile.utils.updateCameraPositionState
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
@@ -323,6 +325,7 @@ fun AddDiveScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectCoordinates(navController: NavController) {
+    val defaultInitialLocation = LatLng(44.1480, 12.2355)
     val stateHandle = navController.previousBackStackEntry?.savedStateHandle
     val latitude = stateHandle?.get<String>("latitude")?.toDoubleOrNull()
     val longitude = stateHandle?.get<String>("longitude")?.toDoubleOrNull()
@@ -331,10 +334,22 @@ fun SelectCoordinates(navController: NavController) {
     } else {
         null
     }
-    var markerPosition by remember { mutableStateOf(initialPosition) }
-
     val diveSites = remember { mutableStateListOf<DiveSite>() }
     val coroutineScope = rememberCoroutineScope()
+    val ctx = LocalContext.current
+    val locationService = remember { LocationService(ctx) }
+    val coordinates by locationService.coordinates.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val locationPermissions = rememberMultiplePermissions(
+        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+    ) { }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(defaultInitialLocation, 10f)
+    }
+
+    var markerPosition by remember { mutableStateOf(initialPosition) }
+    var isInitialLocationSet by remember { mutableStateOf(false) }
+
 
     LaunchedEffect(key1 = navController.currentBackStackEntry) {
         val result = DiveSiteRepository.getAllDiveSites()
@@ -342,40 +357,7 @@ fun SelectCoordinates(navController: NavController) {
         diveSites.addAll(result)
     }
 
-    val ctx = LocalContext.current
-    val locationService = remember { LocationService(ctx) }
-    val coordinates by locationService.coordinates.collectAsStateWithLifecycle()
-
-    val scope = rememberCoroutineScope()
-
-    val locationPermissions = rememberMultiplePermissions(
-        listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-    ) { }
-
-    suspend fun getLocationOrRequestPermission() {
-        if (locationPermissions.statuses.any { it.value.isGranted }) {
-            try {
-                locationService.getCurrentLocation()
-            } catch (_: IllegalStateException) { }
-        } else {
-            locationPermissions.launchPermissionRequest()
-        }
-    }
-
-    fun updateCameraPositionState(cameraPositionState: CameraPositionState) {
-        if(coordinates != null) {
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(coordinates!!.latitude, coordinates!!.longitude), 14f)
-        }
-    }
-
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(44.1480, 12.2355), 14f)
-    }
-
-    scope.launch {
-        getLocationOrRequestPermission()
-        updateCameraPositionState(cameraPositionState)
-    }
+    scope.launch { getLocationOrRequestPermission(locationPermissions, locationService) }
 
     Scaffold(
         topBar = {
@@ -393,7 +375,7 @@ fun SelectCoordinates(navController: NavController) {
         }
     ) {
         GoogleMap(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             cameraPositionState = cameraPositionState,
             onMapClick = { latLng ->
                 coroutineScope.launch {
@@ -406,7 +388,8 @@ fun SelectCoordinates(navController: NavController) {
                         navController.navigateUp()
                     }
                 }
-            }
+            },
+            properties = MapProperties(isMyLocationEnabled = locationPermissions.statuses.any { it.value.isGranted })
         ) {
             diveSites.forEach { site ->
                 Marker(
@@ -415,6 +398,13 @@ fun SelectCoordinates(navController: NavController) {
                     ),
                     icon = BitmapDescriptorFactory.fromResource(R.drawable.divesite_icon),
                 )
+            }
+
+            LaunchedEffect(coordinates) {
+                if (coordinates != null && !isInitialLocationSet) {
+                    updateCameraPositionState(cameraPositionState, coordinates)
+                    isInitialLocationSet = true
+                }
             }
 
             markerPosition?.let { position ->

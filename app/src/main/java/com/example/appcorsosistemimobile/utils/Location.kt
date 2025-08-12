@@ -9,12 +9,16 @@ import android.provider.Settings
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices.getFusedLocationProviderClient
 import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 
 data class Coordinates(val latitude: Double, val longitude: Double)
 
@@ -62,5 +66,28 @@ class LocationService(private val ctx: Context) {
         if (intent.resolveActivity(ctx.packageManager) != null) {
             ctx.startActivity(intent)
         }
+    }
+}
+
+val defaultInitialLocation = LatLng(44.1480, 12.2355)
+
+suspend fun getLocationOrRequestPermission(locationPermissions: MultiplePermissionHandler, locationService: LocationService) {
+    if (!locationPermissions.statuses.any { it.value.isGranted }) {
+        locationPermissions.launchPermissionRequest()
+    }
+    if (locationPermissions.statuses.any { it.value.isGranted }) {
+        try {
+            locationService.getCurrentLocation()
+        } catch (_: IllegalStateException) { }
+    }
+}
+
+fun isApproximatelyEqual(latLng1: LatLng, latLng2: LatLng, tolerance: Double = 0.000001 ): Boolean {
+    return abs(latLng1.latitude - latLng2.latitude) < tolerance && abs(latLng1.longitude - latLng2.longitude) < tolerance
+}
+
+fun updateCameraPositionState(cameraPositionState: CameraPositionState, coordinates: Coordinates?) {
+    if(coordinates != null && isApproximatelyEqual(cameraPositionState.position.target, defaultInitialLocation)) {
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(coordinates.latitude, coordinates.longitude), cameraPositionState.position.zoom)
     }
 }
