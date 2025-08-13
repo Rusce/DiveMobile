@@ -8,7 +8,6 @@ import kotlinx.coroutines.tasks.await
 import android.content.Context
 import android.net.Uri
 import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.tasks.await
 import android.util.Log
 
 object DiveSiteRepository {
@@ -113,8 +112,8 @@ object DiveSiteRepository {
         Log.d("DiveSiteComments", "Fetching comments for diveSiteId: $diveSiteId")//debug
         val comments = getCommentsForDiveSite(diveSiteId)
         var sum = 0
-        comments.forEach( {it -> sum += it.stars} )
-        return (sum / comments.size).toDouble()
+        comments.forEach {sum += it.stars}
+        return (sum / if(comments.isEmpty()) 1 else comments.size).toDouble()
     }
 }
 

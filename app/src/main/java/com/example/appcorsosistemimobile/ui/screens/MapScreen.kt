@@ -33,13 +33,13 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.SphericalUtil
 import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.example.appcorsosistemimobile.ui.components.MapInfoOverlay
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.appcorsosistemimobile.R
 import com.example.appcorsosistemimobile.utils.*
 import androidx.navigation.NavController
-import com.example.appcorsosistemimobile.data.model.DiveSiteComment
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.google.maps.android.compose.MapProperties
 import kotlinx.coroutines.launch
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 //TODO visualizzazione lista (in base alla distanza e filtri extra)
 //TODO quando premo mappa dalla schermata dei dettagli dovrebbe uscire dai dettagli
 
-@SuppressLint("CoroutineCreationDuringComposition")
+@SuppressLint("CoroutineCreationDuringComposition", "MutableCollectionMutableState")
 @Composable
 fun MapScreen(navController: NavController) {
     val diveSites = remember { mutableStateListOf<DiveSite>() }
@@ -63,13 +63,14 @@ fun MapScreen(navController: NavController) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(defaultInitialLocation, 10f)
     }
-    var comments by remember { mutableStateOf<Map<String, Double>>(emptyMap()) }
+    val votes by remember { mutableStateOf<MutableMap<DiveSite, Double>>(mutableMapOf()) }
+    val distances by remember { mutableStateOf<MutableMap<DiveSite, Double>>(mutableMapOf()) }
 
     var selectedSite by remember { mutableStateOf<DiveSite?>(null) }
     var isInitialLocationSet by remember { mutableStateOf(false) }
     var showList by remember { mutableStateOf(false) }
     var filterMenuExpanded by remember { mutableStateOf(false) }
-    var sorting by remember { mutableStateOf<String>("nothing") }
+    var sorting by remember { mutableStateOf("nothing") }
 
     LaunchedEffect(key1 = navController.currentBackStackEntry) {
         val result = DiveSiteRepository.getAllDiveSites()
@@ -79,7 +80,7 @@ fun MapScreen(navController: NavController) {
 
     scope.launch {
         getLocationOrRequestPermission(locationPermissions, locationService)
-        diveSites.forEach({it -> comments.plus(Pair(it.id, DiveSiteRepository.getReveiwsAverageForDiveSite(it.id)))})
+        diveSites.forEach { votes[it] = DiveSiteRepository.getReveiwsAverageForDiveSite(it.id) }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -205,62 +206,30 @@ fun MapScreen(navController: NavController) {
                                 .fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            val sortedSites = diveSites.toList()
-                                .sortedBy { site ->
-                                when {
-                                    sorting == "distance" -> site.id
-                                    sorting == "depth" -> site.id
-                                    sorting == "reviews" -> site.id
-                                    else -> site.name
+                            val sortedSites = when(sorting) {
+                                "distance" -> {
+                                    diveSites.forEach{ distances[it] = SphericalUtil.computeDistanceBetween(
+                                        cameraPositionState.position.target,
+                                        LatLng(it.latitude, it.longitude)) }
+                                    distances.entries.sortedBy{ it.value }.map{ it.key }
                                 }
+                                "depth" -> { diveSites.sortedByDescending { it.maxDepth } }
+                                "reviews" -> { votes.entries.sortedByDescending{ it.value }.map{ it.key } }
+                                else -> { diveSites.toList() }
                             }
+                            sortedSites.forEach { Log.d("SORTED SITES", it.toString()) }
+
                             items(sortedSites) { site ->
                                 MapInfoOverlay(
                                     site = site,
-                                    onDetailsClick = { site ->
-                                        navController.navigate("detail/${site.id}")
+                                    onDetailsClick = { clickedSite ->
+                                        navController.navigate("detail/${clickedSite.id}")
                                     },
                                     onClose = { }
                                 )
                             }
                         }
                     }
-
-
-
-                    /*Box {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(12.dp)
-                        ) {
-                            AsyncImage(
-                                model = site.imageUrls.firstOrNull(),
-                                contentDescription = site.name,
-                                modifier = Modifier.size(100.dp),
-                                placeholder = painterResource(id = R.drawable.placeholder),
-                                error = painterResource(id = R.drawable.image_error)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(site.name, style = MaterialTheme.typography.titleMedium)
-                                Text(site.description, style = MaterialTheme.typography.bodySmall, maxLines = 2)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Button(onClick = { onDetailsClick(site) }) {
-                                    Text("Ulteriori dettagli")
-                                }
-                            }
-                        }
-
-                        IconButton(
-                            onClick = onClose,
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.Close, contentDescription = "Chiudi")
-                        }
-                    }*/
                 }
             }
         }
