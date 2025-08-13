@@ -108,5 +108,13 @@ object DiveSiteRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun getReveiwsAverageForDiveSite(diveSiteId: String): Double {
+        Log.d("DiveSiteComments", "Fetching comments for diveSiteId: $diveSiteId")//debug
+        val comments = getCommentsForDiveSite(diveSiteId)
+        var sum = 0
+        comments.forEach( {it -> sum += it.stars} )
+        return (sum / comments.size).toDouble()
+    }
 }
 
