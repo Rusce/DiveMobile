@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.appcorsosistemimobile.data.model.DiveSiteComment
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
+import com.example.appcorsosistemimobile.ui.components.GetStars
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -102,7 +103,8 @@ fun CommentItem(comment: DiveSiteComment) {
                 Text(comment.title, style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(4.dp))
             }
-            Text("⭐".repeat(comment.stars), style = MaterialTheme.typography.bodyMedium)
+//            Text("⭐".repeat(comment.stars), style = MaterialTheme.typography.bodyMedium)
+            GetStars(comment.stars.toDouble())
             Spacer(modifier = Modifier.height(8.dp))
             if(comment.description.isNotBlank()) {
                 Text(comment.description, style = MaterialTheme.typography.bodyLarge)

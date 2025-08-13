@@ -8,7 +8,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,7 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.appcorsosistemimobile.R
@@ -26,6 +32,62 @@ import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.SphericalUtil
 import com.google.maps.android.compose.CameraPositionState
+
+@Composable
+fun GetStars(vote: Double, showNumber: Boolean = false, textStyle: TextStyle = MaterialTheme.typography.headlineSmall) {
+    val gold = Color(0xFFFFD700)
+    val iconSize = with(LocalDensity.current) {
+        textStyle.fontSize.toDp()
+    }
+
+    Row {
+        if(showNumber) { Text("$vote/5", style = MaterialTheme.typography.bodySmall) }
+        Spacer(Modifier.width(4.dp))
+        for(i in 1..vote.toInt()) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = "Stella piena",
+                tint = gold,
+                modifier = Modifier.size(iconSize)
+            )
+        }
+        when{
+            vote - vote.toInt() > 0.75 -> {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Stella piena",
+                    tint = gold,
+                    modifier = Modifier.size(iconSize)
+                )
+            }
+            vote - vote.toInt() > 0.25 -> {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.StarHalf,
+                    contentDescription = "Mezza stella",
+                    tint = gold,
+                    modifier = Modifier.size(iconSize)
+                )
+            }
+            vote < 5.0 -> {
+                Icon(
+                    imageVector = Icons.Default.StarOutline,
+                    contentDescription = "Stella vuota",
+                    tint = gold,
+                    modifier = Modifier.size(iconSize)
+                )
+            }
+            else -> { }
+        }
+        for(i in vote.toInt() + 1..4) {
+            Icon(
+                imageVector = Icons.Default.StarOutline,
+                contentDescription = "Stella vuota",
+                tint = gold,
+                modifier = Modifier.size(iconSize)
+            )
+        }
+    }
+}
 
 @Composable
 fun InfoOverlay(
@@ -53,7 +115,7 @@ fun InfoOverlay(
                     text = "Profondità: ${site.minDepth ?: "?"}m - ${site.maxDepth ?: "?"}m",
                     style = MaterialTheme.typography.bodySmall
                 )
-                Text("$showVotes/5" + "⭐".repeat(showVotes.toInt()), style = MaterialTheme.typography.bodySmall)
+                GetStars(showVotes, true, MaterialTheme.typography.bodyLarge)
             } else {
                 Text(site.description, style = MaterialTheme.typography.bodySmall, maxLines = 2)
             }
@@ -204,7 +266,7 @@ fun SitesListOverlay(
                         InfoOverlay(
                             site = site,
                             onDetailsClick = onDetailsClick,
-                            showVotes = votes.get(site)
+                            showVotes = votes[site]
                         )
                     }
                 }
