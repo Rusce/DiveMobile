@@ -372,49 +372,50 @@ fun SelectCoordinates(navController: NavController) {
                 }
 
             )
-        }
-    ) {
-        GoogleMap(
-            modifier = Modifier.fillMaxWidth(),
-            cameraPositionState = cameraPositionState,
-            onMapClick = { latLng ->
-                coroutineScope.launch {
-                    markerPosition = latLng
-                    delay(500)
+        },
+        content = { innerPadding ->
+            GoogleMap(
+                modifier = Modifier.padding(innerPadding),
+                cameraPositionState = cameraPositionState,
+                onMapClick = { latLng ->
+                    coroutineScope.launch {
+                        markerPosition = latLng
+                        delay(500)
 
-                    withContext(Dispatchers.Main) {
-                        navController.previousBackStackEntry?.savedStateHandle?.set("latitude", latLng.latitude.toString())
-                        navController.previousBackStackEntry?.savedStateHandle?.set("longitude", latLng.longitude.toString())
-                        navController.navigateUp()
+                        withContext(Dispatchers.Main) {
+                            navController.previousBackStackEntry?.savedStateHandle?.set("latitude", latLng.latitude.toString())
+                            navController.previousBackStackEntry?.savedStateHandle?.set("longitude", latLng.longitude.toString())
+                            navController.navigateUp()
+                        }
                     }
-                }
-            },
-            properties = MapProperties(isMyLocationEnabled = locationPermissions.statuses.any { it.value.isGranted })
-        ) {
-            diveSites.forEach { site ->
-                Marker(
-                    state = rememberMarkerState(
-                        position = LatLng(site.latitude, site.longitude)
-                    ),
-                    icon = BitmapDescriptorFactory.fromResource(R.drawable.divesite_icon),
-                )
-            }
-
-            LaunchedEffect(coordinates) {
-                if (coordinates != null && !isInitialLocationSet) {
-                    updateCameraPositionState(cameraPositionState, coordinates)
-                    isInitialLocationSet = true
-                }
-            }
-
-            markerPosition?.let { position ->
-                key(position) {
+                },
+                properties = MapProperties(isMyLocationEnabled = locationPermissions.statuses.any { it.value.isGranted })
+            ) {
+                diveSites.forEach { site ->
                     Marker(
-                        state = rememberMarkerState(position = position),
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                        state = rememberMarkerState(
+                            position = LatLng(site.latitude, site.longitude)
+                        ),
+                        icon = BitmapDescriptorFactory.fromResource(R.drawable.divesite_icon),
                     )
                 }
+
+                LaunchedEffect(coordinates) {
+                    if (coordinates != null && !isInitialLocationSet) {
+                        updateCameraPositionState(cameraPositionState, coordinates)
+                        isInitialLocationSet = true
+                    }
+                }
+
+                markerPosition?.let { position ->
+                    key(position) {
+                        Marker(
+                            state = rememberMarkerState(position = position),
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                        )
+                    }
+                }
             }
         }
-    }
+    )
 }
