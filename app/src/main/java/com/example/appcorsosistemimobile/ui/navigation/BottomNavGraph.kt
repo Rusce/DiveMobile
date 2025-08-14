@@ -65,6 +65,7 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
             val encoded = backStackEntry.arguments?.getString("diveSiteId") ?: ""
             val diveSiteId = URLDecoder.decode(encoded, StandardCharsets.UTF_8.name())
             AddCommentScreen(
+                navController = navController,
                 diveSiteId = diveSiteId,
                 onBackClick = { navController.popBackStack() },
                 authViewModel = authViewModel
