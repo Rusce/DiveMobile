@@ -11,9 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.appcorsosistemimobile.data.model.DiveSiteComment
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -25,6 +27,7 @@ import java.util.UUID
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCommentScreen(
+    navController: NavController,
     diveSiteId: String,
     onBackClick: () -> Unit,
     authViewModel: AuthViewModel
@@ -122,6 +125,10 @@ fun AddCommentScreen(
                         "Commento aggiunto con successo!"
                     } else {
                         "Errore: ${result.exceptionOrNull()?.message}"
+                    }
+                    if(result.isSuccess) {
+                        delay(500)
+                        navController.navigateUp()
                     }
                 }
             }) {
