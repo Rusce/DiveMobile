@@ -9,6 +9,7 @@ import android.content.Context
 import android.net.Uri
 import com.google.firebase.storage.ktx.storage
 import android.util.Log
+import kotlin.math.round
 
 object DiveSiteRepository {
 
@@ -113,7 +114,7 @@ object DiveSiteRepository {
         val comments = getCommentsForDiveSite(diveSiteId)
         var sum = 0
         comments.forEach {sum += it.stars}
-        return (sum / if(comments.isEmpty()) 1 else comments.size).toDouble()
+        return round((sum.toDouble() / if(comments.isEmpty()) 1 else comments.size) * 10.0) / 10.0
     }
 }
 

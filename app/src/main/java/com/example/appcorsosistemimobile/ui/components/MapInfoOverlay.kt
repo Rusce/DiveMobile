@@ -52,7 +52,7 @@ fun GetStars(vote: Double, showNumber: Boolean = false, textStyle: TextStyle = M
             )
         }
         when{
-            vote - vote.toInt() > 0.75 -> {
+            vote - vote.toInt() >= 0.75 -> {
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = "Stella piena",
@@ -60,7 +60,7 @@ fun GetStars(vote: Double, showNumber: Boolean = false, textStyle: TextStyle = M
                     modifier = Modifier.size(iconSize)
                 )
             }
-            vote - vote.toInt() > 0.25 -> {
+            vote - vote.toInt() >= 0.25 -> {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.StarHalf,
                     contentDescription = "Mezza stella",
