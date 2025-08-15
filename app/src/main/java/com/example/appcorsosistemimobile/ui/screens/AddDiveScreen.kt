@@ -27,6 +27,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.example.appcorsosistemimobile.utils.LocationService
+import com.example.appcorsosistemimobile.utils.centerUser
 import com.example.appcorsosistemimobile.utils.getLocationOrRequestPermission
 import com.example.appcorsosistemimobile.utils.rememberMultiplePermissions
 import com.example.appcorsosistemimobile.utils.updateCameraPositionState
@@ -402,7 +403,7 @@ fun SelectCoordinates(navController: NavController) {
 
                 LaunchedEffect(coordinates) {
                     if (coordinates != null && !isInitialLocationSet) {
-                        updateCameraPositionState(cameraPositionState, coordinates)
+                        centerUser(cameraPositionState, coordinates)
                         isInitialLocationSet = true
                     }
                 }

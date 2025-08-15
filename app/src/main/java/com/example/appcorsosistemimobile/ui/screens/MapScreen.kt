@@ -89,7 +89,7 @@ fun MapScreen(navController: NavController) {
 
             LaunchedEffect(coordinates) {
                 if (coordinates != null && !isInitialLocationSet) {
-                    updateCameraPositionState(cameraPositionState, coordinates)
+                    centerUser(cameraPositionState, coordinates)
                     isInitialLocationSet = true
                 }
             }
@@ -117,7 +117,12 @@ fun MapScreen(navController: NavController) {
                 distances = distances,
                 votes = votes,
                 cameraPositionState = cameraPositionState,
-                onDetailsClick = { site -> navController.navigate("detail/${site.id}") },
+                onDetailsClick = {
+//                    site -> navController.navigate("detail/${site.id}")
+                    showList = false
+                    updateCameraPositionState(cameraPositionState, LatLng(it.latitude, it.longitude))
+                    selectedSite = it
+                },
                 onClose = { showList = false }
             )
         }
