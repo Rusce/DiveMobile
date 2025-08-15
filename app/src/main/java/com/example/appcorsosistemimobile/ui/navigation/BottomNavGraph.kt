@@ -28,6 +28,7 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
 
         composable("profile") {
             ProfileScreen(
+                navController = navController,
                 onNavigateToRegister = { navController.navigate("register") },
                 authViewModel = authViewModel
             )

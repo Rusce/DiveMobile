@@ -176,7 +176,7 @@ fun SitesListOverlay(
     ) {
         Card(
             modifier = Modifier.fillMaxSize(),
-            shape = RoundedCornerShape(32.dp)
+            shape = RoundedCornerShape(16.dp)
         ) {
             Row (
                 modifier = Modifier
