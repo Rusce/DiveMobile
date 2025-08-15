@@ -86,7 +86,13 @@ fun isApproximatelyEqual(latLng1: LatLng, latLng2: LatLng, tolerance: Double = 0
     return abs(latLng1.latitude - latLng2.latitude) < tolerance && abs(latLng1.longitude - latLng2.longitude) < tolerance
 }
 
-fun updateCameraPositionState(cameraPositionState: CameraPositionState, coordinates: Coordinates?) {
+fun updateCameraPositionState(cameraPositionState: CameraPositionState, latLng: LatLng?) {
+    if(latLng != null) {
+        cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, cameraPositionState.position.zoom)
+    }
+}
+
+fun centerUser(cameraPositionState: CameraPositionState, coordinates: Coordinates?) {
     if(coordinates != null && isApproximatelyEqual(cameraPositionState.position.target, defaultInitialLocation)) {
         cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(coordinates.latitude, coordinates.longitude), cameraPositionState.position.zoom)
     }
