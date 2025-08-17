@@ -89,7 +89,7 @@ class AuthViewModel : ViewModel() {
                             onError("Registrazione avvenuta, ma salvataggio su Firestore fallito")
                         }
 
-//                    login(email, password, onSuccess, onError)
+                    login(email, password, onSuccess, onError)
                 }
                 .addOnFailureListener {
                     onError(it.message ?: "Errore durante la registrazione")
