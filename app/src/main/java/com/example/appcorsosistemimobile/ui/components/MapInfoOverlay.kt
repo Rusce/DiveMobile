@@ -22,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -133,10 +135,20 @@ fun MapInfoOverlay(
     onDetailsClick: (DiveSite) -> Unit,
     onClose: () -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val orientation = configuration.orientation
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(140.dp),
+        modifier = if(orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+        } else {
+            Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .padding(start = 64.dp, end = 40.dp)
+        },
         shape = RoundedCornerShape(16.dp)
     ) {
         Box {
@@ -166,13 +178,22 @@ fun SitesListOverlay(
     onDetailsClick: (DiveSite) -> Unit,
     onClose: () -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val orientation = configuration.orientation
+
     var filterMenuExpanded by remember { mutableStateOf(false) }
     var sorting by remember { mutableStateOf("nothing") }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 56.dp, start = 16.dp, end = 16.dp, bottom = 100.dp)
+        modifier = if(orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 56.dp, start = 16.dp, end = 16.dp, bottom = 100.dp)
+        } else {
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, start = 80.dp, end = 56.dp, bottom = 16.dp)
+        }
     ) {
         Card(
             modifier = Modifier.fillMaxSize(),

@@ -3,6 +3,8 @@ package com.example.appcorsosistemimobile.ui.screens
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -66,6 +68,7 @@ fun AddCommentScreen(
     var description by remember { mutableStateOf("") }
     var stars by remember { mutableIntStateOf(3) }
     var successMessage by remember { mutableStateOf<String?>(null) }
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -83,6 +86,7 @@ fun AddCommentScreen(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
+                .verticalScroll(scrollState)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
