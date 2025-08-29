@@ -55,14 +55,14 @@ fun ProfileScreen(
                     favourites.add(it)
                 }
                 comments[it.id] = DiveSiteRepository.getCommentsForDiveSite(it.id)
-                if (it.authorName == "${currentUser!!.name} ${currentUser!!.surname}") {
+                if (it.authorName == "${currentUser?.name} ${currentUser?.surname}") {
                     diveSitesNumber++
                 }
             }
 
             comments.forEach { (_, list) ->
                 list.forEach{ comment ->
-                    if (comment.authorName == "${currentUser!!.name} ${currentUser!!.surname}")
+                    if (comment.authorName == "${currentUser?.name} ${currentUser?.surname}")
                         commentsNumber++
                 }
             }
