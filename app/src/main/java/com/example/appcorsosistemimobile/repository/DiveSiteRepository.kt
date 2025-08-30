@@ -116,5 +116,10 @@ object DiveSiteRepository {
         comments.forEach {sum += it.stars}
         return round((sum.toDouble() / if(comments.isEmpty()) 1 else comments.size) * 10.0) / 10.0
     }
+
+    suspend fun getUserReviewForDiveSite(diveSiteId: String, authorName: String): DiveSiteComment? {
+        getCommentsForDiveSite(diveSiteId).forEach { if(it.authorName == authorName) return it }
+        return null
+    }
 }
 

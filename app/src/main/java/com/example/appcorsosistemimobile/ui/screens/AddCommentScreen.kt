@@ -1,5 +1,6 @@
 package com.example.appcorsosistemimobile.ui.screens
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -26,7 +27,6 @@ import java.util.UUID
 // bisogna fare in modo di ritornare sulla pagina di dettaglio per evitare bug
 //TODO uan volta aggiunto un commento fare navigateUp ??
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCommentScreen(
     navController: NavController,
@@ -34,12 +34,47 @@ fun AddCommentScreen(
     onBackClick: () -> Unit,
     authViewModel: AuthViewModel
 ) {
+    CommentScreen(navController,  diveSiteId, onBackClick, authViewModel)
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun EditCommentScreen(
+    navController: NavController,
+    diveSiteId: String,
+    onBackClick: () -> Unit,
+    authViewModel: AuthViewModel
+) {
+    val scope = rememberCoroutineScope()
+    val currentUser by authViewModel.currentUser.collectAsState()
+
+    var comment by remember { mutableStateOf<DiveSiteComment?>(null) }
+
+    scope.launch {
+        comment = DiveSiteRepository.getUserReviewForDiveSite(
+            diveSiteId,
+            currentUser?.name + " " + currentUser?.surname
+        )
+        println(comment)
+    }
+    CommentScreen(navController, diveSiteId, onBackClick, authViewModel, comment)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CommentScreen(
+    navController: NavController,
+    diveSiteId: String,
+    onBackClick: () -> Unit,
+    authViewModel: AuthViewModel,
+    diveSiteComment: DiveSiteComment? = null
+) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
     val currentUserEmail by authViewModel.currentUserEmail.collectAsState()
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(isLoggedIn, currentUser, currentUserEmail) {
+    LaunchedEffect(isLoggedIn, currentUser, currentUserEmail, diveSiteComment) {
         if (isLoggedIn && currentUser == null && currentUserEmail != null) {
             authViewModel.loadUserProfile(currentUserEmail!!)
         }
@@ -70,10 +105,18 @@ fun AddCommentScreen(
     var successMessage by remember { mutableStateOf<String?>(null) }
     val scrollState = rememberScrollState()
 
+    LaunchedEffect(diveSiteComment) {
+        diveSiteComment?.let { comment ->
+            title = comment.title
+            description = comment.description
+            stars = comment.stars
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Aggiungi commento") },
+                title = { Text("${if(diveSiteComment != null) "Modifica" else "Aggiungi"} commento") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
@@ -114,7 +157,7 @@ fun AddCommentScreen(
 
             Button(onClick = {
                 val comment = DiveSiteComment(
-                    id = UUID.randomUUID().toString(),
+                    id = diveSiteComment?.id ?: UUID.randomUUID().toString(),
                     diveId = diveSiteId,
                     authorName = authorName,
                     title = title,
@@ -126,7 +169,7 @@ fun AddCommentScreen(
                 scope.launch {
                     val result = DiveSiteRepository.addCommentToDiveSite(diveSiteId, comment)
                     successMessage = if (result.isSuccess) {
-                        "Commento aggiunto con successo!"
+                        "Commento ${if(diveSiteComment != null) "modificato" else "aggiunto"} con successo!"
                     } else {
                         "Errore: ${result.exceptionOrNull()?.message}"
                     }

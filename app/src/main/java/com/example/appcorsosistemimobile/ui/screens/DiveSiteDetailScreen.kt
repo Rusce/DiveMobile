@@ -1,6 +1,7 @@
 package com.example.appcorsosistemimobile.ui.screens
 
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,6 +27,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.appcorsosistemimobile.R
 import com.example.appcorsosistemimobile.data.model.DiveSite
+import com.example.appcorsosistemimobile.data.model.DiveSiteComment
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 import com.google.android.gms.maps.model.CameraPosition
@@ -58,12 +60,21 @@ fun DiveSiteDetailScreen(
     var site by remember { mutableStateOf<DiveSite?>(null) }
     var loading by remember { mutableStateOf(true) }
     var toggleLoading by remember { mutableStateOf(false) }
+    var userReview by remember { mutableStateOf<DiveSiteComment?>(null) }
 
     val isFavorite = currentUser?.favouriteDiveSite?.contains(diveSiteId) == true
 
     LaunchedEffect(diveSiteId) {
         site = DiveSiteRepository.getDiveSiteById(diveSiteId)
         loading = false
+        if(site != null) {
+            userReview = DiveSiteRepository.getUserReviewForDiveSite(
+                site!!.id,
+                currentUser?.name + " " + currentUser?.surname
+            )
+            Log.d(null, site!!.id)
+            Log.d(null, currentUser?.name + " " + currentUser?.surname)
+        }
     }
 
     LaunchedEffect(key1 = currentUserEmail) {
@@ -204,13 +215,22 @@ fun DiveSiteDetailScreen(
                         if (!isLoggedIn) {
                             Toast.makeText(context, "Devi essere loggato per aggiungere un commento", Toast.LENGTH_SHORT).show()
                         } else {
-                            navController.navigate("add_comment/$encodedId")
+                            navController.navigate("${if(userReview != null) "edit" else "add"}_comment/$encodedId")
                         }
-                              },
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Aggiungi commento")
+                    Text("${if(userReview != null) "Modifica" else "Aggiungi"} commento")
                 }
+
+                /*if(false) {
+                    Button(
+                        onClick = { navController.navigate("") },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Modifica sito")
+                    }
+                }*/
             }
 
             Text(text = "Posizione", style = MaterialTheme.typography.titleMedium)

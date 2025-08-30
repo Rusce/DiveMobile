@@ -73,6 +73,20 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
             )
         }
 
+        composable(
+            route = "edit_comment/{diveSiteId}",
+            arguments = listOf(navArgument("diveSiteId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val encoded = backStackEntry.arguments?.getString("diveSiteId") ?: ""
+            val diveSiteId = URLDecoder.decode(encoded, StandardCharsets.UTF_8.name())
+            EditCommentScreen(
+                navController = navController,
+                diveSiteId = diveSiteId,
+                onBackClick = { navController.popBackStack() },
+                authViewModel = authViewModel
+            )
+        }
+
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
