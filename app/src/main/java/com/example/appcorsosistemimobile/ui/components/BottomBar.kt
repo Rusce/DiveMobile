@@ -42,6 +42,24 @@ fun BottomBar(navController: NavController, authViewModel: AuthViewModel) {
                         return@NavigationBarItem
                     }
 
+                    //codice per eliminare mantenimento stato (add comment o dettaglio divesite) se cambio pagina e torno a mappa
+                    if (item is BottomNavItem.Map) {
+                        // se ho roba sopra "map" (detail, comments, add_comment ecc. poppo fino a map
+                        val popped = navController.popBackStack("map", inclusive = false)
+                        if (!popped || navController.currentBackStackEntry?.destination?.route != "map") {
+
+                            navController.navigate("map") {
+                                // pop fino allo start ma senza salvare lo stato della tab
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = false
+                                }
+                                launchSingleTop = true
+                                restoreState = false   // <- disattiva il ripristino che ti riportava su detail
+                            }
+                        }
+                        return@NavigationBarItem
+                    }
+
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.startDestinationId) { saveState = true }
