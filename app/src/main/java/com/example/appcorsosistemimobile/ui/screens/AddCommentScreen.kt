@@ -55,7 +55,6 @@ fun EditCommentScreen(
             diveSiteId,
             currentUser?.name + " " + currentUser?.surname
         )
-        println(comment)
     }
     CommentScreen(navController, diveSiteId, onBackClick, authViewModel, comment)
 }

@@ -72,8 +72,6 @@ fun DiveSiteDetailScreen(
                 site!!.id,
                 currentUser?.name + " " + currentUser?.surname
             )
-            Log.d(null, site!!.id)
-            Log.d(null, currentUser?.name + " " + currentUser?.surname)
         }
     }
 
@@ -93,6 +91,14 @@ fun DiveSiteDetailScreen(
                     }
                 },
                 actions = {
+                    if(site != null && site!!.authorName == currentUser?.name + " " + currentUser?.surname) {
+                        Button(
+                            onClick = { navController.navigate("edit/${Uri.encode(site!!.id)}") }
+                        ) {
+                            Text("Modifica sito")
+                        }
+                    }
+
                     IconButton(
                         onClick = {
                             if (!isLoggedIn) {
@@ -222,15 +228,6 @@ fun DiveSiteDetailScreen(
                 ) {
                     Text("${if(userReview != null) "Modifica" else "Aggiungi"} commento")
                 }
-
-                /*if(false) {
-                    Button(
-                        onClick = { navController.navigate("") },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Modifica sito")
-                    }
-                }*/
             }
 
             Text(text = "Posizione", style = MaterialTheme.typography.titleMedium)

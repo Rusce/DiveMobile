@@ -30,7 +30,6 @@ import com.example.appcorsosistemimobile.utils.LocationService
 import com.example.appcorsosistemimobile.utils.centerUser
 import com.example.appcorsosistemimobile.utils.getLocationOrRequestPermission
 import com.example.appcorsosistemimobile.utils.rememberMultiplePermissions
-import com.example.appcorsosistemimobile.utils.updateCameraPositionState
 import com.example.appcorsosistemimobile.viewmodel.AuthViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -52,6 +51,30 @@ import java.util.*
 fun AddDiveScreen(
     navController: NavController,
     authViewModel: AuthViewModel
+) {
+    DiveScreen(navController, authViewModel)
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun EditDiveScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    diveSiteId: String
+) {
+    val scope = rememberCoroutineScope()
+    var site by remember { mutableStateOf<DiveSite?>(null) }
+    scope.launch {
+        site = DiveSiteRepository.getDiveSiteById(diveSiteId)
+    }
+    DiveScreen(navController, authViewModel, site)
+}
+
+@Composable
+fun DiveScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    site: DiveSite? = null
 ) {
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -120,7 +143,18 @@ fun AddDiveScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Aggiungi Luogo di Immersione", style = MaterialTheme.typography.headlineSmall)
+        Text("${if(site != null) "Modifica" else "Aggiungi"} Luogo di Immersione", style = MaterialTheme.typography.headlineSmall)
+
+        LaunchedEffect(site) {
+            site?.let {
+                name = it.name
+                description = it.description
+                latitude = it.latitude.toString()
+                longitude = it.longitude.toString()
+                minDepth = it.minDepth.toString()
+                maxDepth = it.maxDepth.toString()
+            }
+        }
 
         OutlinedTextField(
             value = name,
@@ -270,7 +304,7 @@ fun AddDiveScreen(
                 isSaving = true
 
                 val diveSite = DiveSite(
-                    id = UUID.randomUUID().toString(),
+                    id = site?.id ?: UUID.randomUUID().toString(),
                     name = name,
                     description = description,
                     latitude = latitude.toDouble(),
@@ -289,7 +323,7 @@ fun AddDiveScreen(
                     )
 
                     successMessage = if (result.isSuccess) {
-                        "Dive site aggiunto con successo!"
+                        "Dive site ${if(site != null) "modificato" else "aggiunto"} con successo!"
                     } else {
                         "Errore: ${result.exceptionOrNull()?.message}"
                     }

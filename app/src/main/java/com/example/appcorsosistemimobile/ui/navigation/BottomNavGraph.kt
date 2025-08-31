@@ -26,6 +26,18 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
             )
         }
 
+        composable(
+            route = "edit/{diveSiteId}",
+            arguments = listOf(navArgument("diveSiteId") { type = NavType.StringType })
+        ) {backStackEntry ->
+            val diveSiteId = backStackEntry.arguments?.getString("diveSiteId") ?: ""
+            EditDiveScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                diveSiteId = diveSiteId
+            )
+        }
+
         composable("profile") {
             ProfileScreen(
                 navController = navController,
