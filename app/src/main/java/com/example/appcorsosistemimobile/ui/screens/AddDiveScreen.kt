@@ -14,16 +14,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import com.example.appcorsosistemimobile.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.appcorsosistemimobile.R
 import com.example.appcorsosistemimobile.data.model.DiveSite
 import com.example.appcorsosistemimobile.repository.DiveSiteRepository
 import com.example.appcorsosistemimobile.utils.LocationService
@@ -43,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.*
 
 @Composable
@@ -125,11 +127,36 @@ fun DiveScreen(
     var isImageOk by remember { mutableStateOf(true) }
     var successMessage by remember { mutableStateOf<String?>(null) }
 
+    // --- Picker Galleria (multi) ---
     val pickImagesLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris ->
         imageUris = uris
         stateHandle?.set("img_list", imageUris)
+    }
+
+    // Fotocamera
+    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+
+    // callback: usa una variabile locale
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        val uri = tempPhotoUri   // <- prendo il valore in una val
+        if (success && uri != null) {
+            imageUris = imageUris + uri
+            stateHandle?.set("img_list", imageUris)
+        }
+    }
+
+    fun newTempImageUri(): Uri {
+        val imagesDir = File(context.cacheDir, "images").apply { mkdirs() }
+        val file = File.createTempFile("photo_", ".jpg", imagesDir)
+        return FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
     }
 
     Column(
@@ -141,7 +168,7 @@ fun DiveScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("${if(site != null) "Modifica" else "Aggiungi"} Luogo di Immersione", style = MaterialTheme.typography.headlineSmall)
+        Text("${if (site != null) "Modifica" else "Aggiungi"} Luogo di Immersione", style = MaterialTheme.typography.headlineSmall)
 
         LaunchedEffect(site) {
             site?.let {
@@ -268,11 +295,20 @@ fun DiveScreen(
             Text("Scegli le coordinate dalla Mappa")
         }
 
-        Button(onClick = { pickImagesLauncher.launch("image/*") }) {
-            Text("Seleziona immagini")
+        // --- Azioni immagini: Galleria + Fotocamera ---
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = { pickImagesLauncher.launch("image/*") }) {
+                Text("Galleria")
+            }
+            Button(onClick = {
+                tempPhotoUri = newTempImageUri()
+                takePictureLauncher.launch(tempPhotoUri!!)
+            }) {
+                Text("Fotocamera")
+            }
         }
 
-        if(!isImageOk) {
+        if (!isImageOk) {
             Text(
                 text = "Inserire un'immagine.",
                 color = MaterialTheme.colorScheme.error
@@ -298,7 +334,7 @@ fun DiveScreen(
             isMaxDepthOk = maxDepth.isNotBlank()
             isImageOk = imageUris.isNotEmpty()
 
-            if(isNameOk && isDescriptionOk && isLatitudeOk && isLongitudeOk && isMinDepthOk && isMaxDepthOk && isImageOk) {
+            if (isNameOk && isDescriptionOk && isLatitudeOk && isLongitudeOk && isMinDepthOk && isMaxDepthOk && isImageOk) {
                 isSaving = true
 
                 val diveSite = DiveSite(
@@ -321,11 +357,11 @@ fun DiveScreen(
                     )
 
                     successMessage = if (result.isSuccess) {
-                        "Dive site ${if(site != null) "modificato" else "aggiunto"} con successo!"
+                        "Dive site ${if (site != null) "modificato" else "aggiunto"} con successo!"
                     } else {
                         "Errore: ${result.exceptionOrNull()?.message}"
                     }
-                    if(result.isSuccess) {
+                    if (result.isSuccess) {
                         isSaving = false
                         delay(500)
                         navController.navigateUp()
@@ -383,7 +419,6 @@ fun SelectCoordinates(navController: NavController) {
     var markerPosition by remember { mutableStateOf(initialPosition) }
     var isInitialLocationSet by remember { mutableStateOf(false) }
 
-
     LaunchedEffect(key1 = navController.currentBackStackEntry) {
         val result = DiveSiteRepository.getAllDiveSites()
         diveSites.clear()
@@ -403,7 +438,6 @@ fun SelectCoordinates(navController: NavController) {
                         Text("Seleziona una posizione")
                     }
                 }
-
             )
         },
         content = { innerPadding ->
