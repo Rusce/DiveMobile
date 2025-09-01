@@ -32,9 +32,6 @@ import com.example.appcorsosistemimobile.ui.components.SitesListOverlay
 import com.google.maps.android.compose.MapProperties
 import kotlinx.coroutines.launch
 
-//TODO filtri (profondità)
-//TODO quando premo mappa dalla schermata dei dettagli dovrebbe uscire dai dettagli
-
 @SuppressLint("CoroutineCreationDuringComposition", "MutableCollectionMutableState")
 @Composable
 fun MapScreen(navController: NavController) {

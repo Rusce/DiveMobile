@@ -22,11 +22,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-//TODO rimuovere il mantenimento di stato su questa schermata, se si cambia
-// (es. si va a profilo mentre si è in schermata add comment)
-// bisogna fare in modo di ritornare sulla pagina di dettaglio per evitare bug
-//TODO uan volta aggiunto un commento fare navigateUp ??
-
 @Composable
 fun AddCommentScreen(
     navController: NavController,
