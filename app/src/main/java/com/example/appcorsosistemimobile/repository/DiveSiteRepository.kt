@@ -13,8 +13,7 @@ import kotlin.math.round
 
 object DiveSiteRepository {
 
-    private val db = Firebase.firestore
-    private val diveSiteCollection = db.collection("dive_sites")
+    private val diveSiteCollection = Firebase.firestore.collection("dive_sites")
 
     suspend fun getAllDiveSites(): List<DiveSite> {
         val snapshot = diveSiteCollection.get().await()
@@ -51,8 +50,7 @@ object DiveSiteRepository {
 
             val diveSiteWithUrls = diveSite.copy(imageUrls = urls)
 
-            Firebase.firestore
-                .collection("dive_sites")
+            diveSiteCollection
                 .document(diveSite.id)
                 .set(diveSiteWithUrls)
                 .await()
@@ -65,8 +63,7 @@ object DiveSiteRepository {
 
     suspend fun addCommentToDiveSite(diveSiteId: String, comment: DiveSiteComment): Result<Unit> {
         return try {
-            Firebase.firestore
-                .collection("dive_sites")
+            diveSiteCollection
                 .document(diveSiteId)
                 .collection("comments")
                 .document(comment.id)
@@ -81,8 +78,7 @@ object DiveSiteRepository {
     suspend fun getCommentsForDiveSite(diveSiteId: String): List<DiveSiteComment> {
         Log.d("DiveSiteComments", "Fetching comments for diveSiteId: $diveSiteId")//debug
         return try {
-            val snapshot = Firebase.firestore
-                .collection("dive_sites")
+            val snapshot = diveSiteCollection
                 .document(diveSiteId)
                 .collection("comments")
                 .get()

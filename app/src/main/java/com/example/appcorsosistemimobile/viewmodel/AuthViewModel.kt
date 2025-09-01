@@ -2,9 +2,6 @@ package com.example.appcorsosistemimobile.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.example.appcorsosistemimobile.data.model.User
@@ -16,7 +13,7 @@ class AuthViewModel : ViewModel() {
 
     private val auth = FirebaseAuth.getInstance()
 
-    private val _currentUserEmail = MutableStateFlow<String?>(auth.currentUser?.email)
+    private val _currentUserEmail = MutableStateFlow(auth.currentUser?.email)
     val currentUserEmail: StateFlow<String?> = _currentUserEmail.asStateFlow()
 
     private val _isLoggedIn = MutableStateFlow(auth.currentUser != null)
